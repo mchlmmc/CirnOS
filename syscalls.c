@@ -238,14 +238,16 @@ int _link(char *name_old, char *name_new) {
 //  Start at the end of BSS segment and will increase until it reaches MEMMAX.
 
 uint32_t _sbrk(int incr) {
-  highest_addr += incr;
-  
-  if((uint32_t)highest_addr > 0x20000000) {
-    errno = ENOMEM;    
-    return -1;    
+  char *prev_highest_addr;
+
+  prev_highest_addr = highest_addr;
+  if((uint32_t)highest_addr + incr > 0x20000000) {
+    errno = ENOMEM;
+    return -1;
   }
   
-  return (uint32_t)highest_addr;
+  highest_addr += incr; 
+  return (uint32_t)prev_highest_addr;
 }
 
 int _gettimeofday(struct timeval *tv, struct timezone *tz) {

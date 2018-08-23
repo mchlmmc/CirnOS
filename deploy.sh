@@ -17,5 +17,5 @@
 
 ./build.sh
 sudo mount /dev/sdb1 /mnt
-sudo cp obj/kernel.img /mnt/kernel.img
+sudo cp OBJ/kernel.img /mnt/kernel.img
 sudo umount /mnt
