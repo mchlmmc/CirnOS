@@ -16,7 +16,7 @@ Todo
 
 Current Bugs
 -----
-Right now there is an issue with Newlib. When calling certain functions like printf, something calls the _sbrk syscall requesting huge amounts of memory. These amounts are larger than the total memory for the rPi, so CirnOS runs out of memory instantly. With this bug fixed development of CirnOS should be finished in a matter of days.
+Right now there is an issue with Newlib. When calling certain functions like printf, something calls the _sbrk syscall requesting huge amounts of memory. These amounts are larger than the total memory for the rPi, so CirnOS runs out of memory instantly. With this bug fixed, development of CirnOS should be finished in a matter of days.
 
 Building
 -----
