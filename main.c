@@ -25,10 +25,10 @@
 #include "ff.h"
 #include "LUA/lua.h"
 #include "LUA/lauxlib.h"
+#include "LUA/lualib.h"
 
 void print_init(){
-  char* VERSION = "Alpha";
-  printf("CirnOS %s Version\n", VERSION);
+  printf("CirnOS Alpha Version 1.0\n");
   printf("Copyright (c) 2018 Michael Mamic\n\n");
 }
 
@@ -46,9 +46,6 @@ uint16_t notmain ( void )
   // Initialize syscall data
   for(int i = 0; i < 20; i++)
     openfiles[i] = NULL;
-
-  extern char _end;
-  highest_addr = &_end;  
   
   // Initialize hardware controller
   bcm2835_init();
@@ -60,24 +57,28 @@ uint16_t notmain ( void )
   print_init();
 
   lua_State *L = luaL_newstate();
+  luaL_openlibs(L);
+  
   if (!L) {
     perror("Error creating Lua state");
-    return 1;
+    endloop();
   }
 
-  printf("Starting hello.lua...\n");  
+  FILE *check_file;
+  if (!(check_file = fopen("main.lua", "r")))
+  {
+    printf("File main.lua does not exist. Halting.\n");      
+    endloop();
+  }
+  
+  fclose(check_file);
 
-  if (luaL_dofile(L, "hello.lua")) {
+  printf("Located main.lua\nStarting main.lua...\n");
+
+  if (luaL_dofile(L, "main.lua")) {
     char const *errmsg = lua_tostring(L, 1);
-    fprintf(stderr, "Failed to execute hello.lua: %s\n", errmsg);
+    printf("Failed to execute main.lua:\n%s\n", errmsg);
   }
-
-  char const *result = lua_tostring(L, 1);
-  if (!result) {
-    fprintf(stderr, "hello.lua did not return a string\n");
-    return 3;
-  }
-  printf("%s\n", result);
 
   lua_close(L);
 

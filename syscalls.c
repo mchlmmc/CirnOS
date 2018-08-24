@@ -30,6 +30,7 @@
 extern int errno;
 
 int _write(int file, char *ptr, int len) {
+  static UINT blocksval;
   // No support for STDIN
   if(file == 0) {
     errno = EBADF;
@@ -45,14 +46,13 @@ int _write(int file, char *ptr, int len) {
     errno = EBADF;
     return -1;
   }
-  UINT *blockswrote = NULL;
+  UINT *blockswrote = &blocksval;
   if (f_write(openfiles[file-3], ptr, len, blockswrote) == FR_OK) {
-    return *blockswrote;
+    return blocksval;
   } else {
     errno = EBADF;
     return -1;
   }  
-  return 1;    
 }
 
 int _translateflags(int flags) {
@@ -161,7 +161,6 @@ int _read(int file, char *ptr, int len) {
   return -1;
 }
 
-// Needs some work.
 int _lseek(int file, int ptr, int dir) {
   // No way to seek STDIN, STDOUT, or STDERROR
   if (file < 3) {
@@ -200,7 +199,7 @@ int _fstat(int file, struct stat *st) {
   } else if (file < 3) {
     st->st_dev = 0;       /* ID of device containing file */
     st->st_ino = file;    /* inode number */
-    st->st_mode = 0222;   /* protection */
+    st->st_mode = S_IFCHR;   /* protection */
     st->st_nlink = 0;
     st->st_uid = 0;
     st->st_gid = 0;
@@ -235,19 +234,20 @@ int _link(char *name_old, char *name_new) {
   }
 }
 
-//  Start at the end of BSS segment and will increase until it reaches MEMMAX.
-
-uint32_t _sbrk(int incr) {
+//  Start at the end of BSS segment and will increase until it reaches the maximum Pi memory.
+char* _sbrk(int incr) {
+  extern char _end;
+  static char* highest_addr = &_end;
   char *prev_highest_addr;
 
   prev_highest_addr = highest_addr;
-  if((uint32_t)highest_addr + incr > 0x20000000) {
+  if(highest_addr + incr > (char*)0x20000000) {
     errno = ENOMEM;
-    return -1;
+    return NULL;
   }
   
   highest_addr += incr; 
-  return (uint32_t)prev_highest_addr;
+  return (char*)prev_highest_addr;
 }
 
 int _gettimeofday(struct timeval *tv, struct timezone *tz) {
