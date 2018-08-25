@@ -234,20 +234,46 @@ int _link(char *name_old, char *name_new) {
   }
 }
 
+// We need to know what incr is
+void printDigits(uint8_t digits, uint32_t num) {
+  uint8_t i = 0;  
+  uint32_t denom = 10;
+  for(uint8_t j = 2; j < digits; j++) {
+    denom *= 10;
+  }
+  do {
+    uint8_t val = 0;
+    while(num > denom) {
+      num -= denom;
+      val++;
+    }
+    hdmi_write_char('0' + val);
+    denom /= 10;
+    i++;      
+  } while (i < digits - 1);
+  hdmi_write_char('0' + num);  
+}
+
 //  Start at the end of BSS segment and will increase until it reaches the maximum Pi memory.
-char* _sbrk(int incr) {
+char *_sbrk(size_t incr) {
   extern char _end;
   static char* highest_addr = &_end;
   char *prev_highest_addr;
+  // Temporary intercept
+  incr = 0x100000;
 
   prev_highest_addr = highest_addr;
-  if(highest_addr + incr > (char*)0x20000000) {
+  if((uint32_t)(highest_addr + incr) > (uint32_t)0x20000000) {
     errno = ENOMEM;
-    return NULL;
+    return (char*)-1;
+    /*  hdmi_write_char('0' + sizeof(size_t));
+	hdmi_write_char('[');
+	printDigits(10, incr);
+	hdmi_write_char(']');  */    
   }
   
   highest_addr += incr; 
-  return (char*)prev_highest_addr;
+  return prev_highest_addr;
 }
 
 int _gettimeofday(struct timeval *tv, struct timezone *tz) {

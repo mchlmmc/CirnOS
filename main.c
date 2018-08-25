@@ -18,12 +18,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include "bcm2835.h"
 #include "hdmi.h"
 #include "emmc.h"
 #include "ff.h"
 #include "LUA/lua.h"
+#include "luabcm.h"
 #include "LUA/lauxlib.h"
 #include "LUA/lualib.h"
 
@@ -34,7 +34,7 @@ void print_init(){
 
 void endloop(){
   while(1) {
-    bcm2835_gpio_clr(47);    
+    bcm2835_gpio_clr(47);
     bcm2835_delay(1000);
     bcm2835_gpio_set(47);    
     bcm2835_delay(1000);    
@@ -58,6 +58,14 @@ uint16_t notmain ( void )
 
   lua_State *L = luaL_newstate();
   luaL_openlibs(L);
+
+  // CirnOS does not support these functions.
+  lua_pushnil(L);
+  lua_setglobal(L, "os");
+  lua_pushnil(L);  
+  lua_setglobal(L, "utf8");
+
+  luabcm_register(L);
   
   if (!L) {
     perror("Error creating Lua state");

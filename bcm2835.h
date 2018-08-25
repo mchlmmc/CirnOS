@@ -447,7 +447,7 @@ typedef enum
 	BCM2835_GPIO_FSEL_ALT3  = 0b111,   ///< Alternate function 3
 	BCM2835_GPIO_FSEL_ALT4  = 0b011,   ///< Alternate function 4
 	BCM2835_GPIO_FSEL_ALT5  = 0b010,   ///< Alternate function 5
-	BCM2835_GPIO_FSEL_MASK  = 0b111    ///< Function select bits mask
+	BCM2835_GPIO_FSEL_MASK  = 0b111    ///< Function select bits mask2
 } bcm2835FunctionSelect;
 
 /// \brief bcm2835PUDControl
