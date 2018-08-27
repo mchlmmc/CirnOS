@@ -17,12 +17,14 @@
 
 MEMORY
 {
-    ram : ORIGIN = 0x8000, LENGTH = 0x20000000
+    ram : ORIGIN = 0x8000, LENGTH = 0x1FFF8000
 }
 
 SECTIONS
 {
     .text : { *(.text*) } > ram
+    .data : { *(.data*) } > ram    
+    _bss = .;        
     .bss : { *(.bss*) } > ram
     _end = .;    
 }

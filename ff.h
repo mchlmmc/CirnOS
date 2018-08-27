@@ -18,7 +18,6 @@
 /
 /----------------------------------------------------------------------------*/
 
-
 #ifndef FF_DEFINED
 #define FF_DEFINED	63463	/* Revision ID */
 
@@ -136,7 +135,8 @@ typedef struct {
 	BYTE	win[FF_MAX_SS];	/* Disk access window for Directory, FAT (and file data at tiny cfg) */
 } FATFS;
 
-
+// Global filesystem for SD Card ~ Mikestylz
+FATFS SDFS;  
 
 /* Object ID and allocation information (FFOBJID) */
 
@@ -179,11 +179,6 @@ typedef struct {
 	BYTE	buf[FF_MAX_SS];	/* File private data read/write window */
 #endif
 } FIL;
- 
-#define MAX_OPEN_FILES 20
-FIL *openfiles[MAX_OPEN_FILES];
-FATFS SDFS;
-char* highest_addr;
 
 /* Directory object structure (DIR) */
 

@@ -85,7 +85,15 @@ void luabcm_register(lua_State *L) {
   lua_pushcfunction(L, l_delay);
   lua_setglobal(L, "delay");
   lua_pushcfunction(L, l_fsel);
-  lua_setglobal(L, "pinmode");
+  lua_setglobal(L, "pinMode");
   lua_pushcfunction(L, l_write);
-  lua_setglobal(L, "pinwrite");  
+  lua_setglobal(L, "writePin");
+  lua_pushboolean(L, 1);
+  lua_setglobal(L, "on");
+  lua_pushboolean(L, 0);
+  lua_setglobal(L, "off");
+  lua_pushnumber(L, 0);
+  lua_setglobal(L, "input");
+  lua_pushnumber(L, 1);
+  lua_setglobal(L, "output");      
 }

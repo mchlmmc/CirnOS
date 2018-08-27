@@ -1042,6 +1042,7 @@ static lu_mem sweepstep (lua_State *L, global_State *g,
 }
 
 
+#include <stdio.h>
 static lu_mem singlestep (lua_State *L) {
   global_State *g = G(L);
   switch (g->gcstate) {
@@ -1126,6 +1127,7 @@ static l_mem getdebt (global_State *g) {
 /*
 ** performs a basic GC step when collector is running
 */
+
 void luaC_step (lua_State *L) {
   global_State *g = G(L);
   l_mem debt = getdebt(g);  /* GC deficit (be paid now) */

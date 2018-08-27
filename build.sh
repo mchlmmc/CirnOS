@@ -19,7 +19,7 @@
 # stop on errors
 set -e
 
-GCC_OPTS=" -Wall -O2 -nostartfiles -nostdlib -mhard-float -ffreestanding -mcpu=arm1176jzf-s -mfpu=vfp -fno-builtin -I. -I/usr/include/newlib -DCPU_ARM"
+GCC_OPTS=" -Wall -O2 -nostartfiles -nostdlib -mhard-float -ffreestanding -mcpu=arm1176jzf-s -mfpu=vfp -fno-builtin -I. -I/usr/lib/arm-none-eabi/include -DCPU_ARM"
 
 COMPILE="arm-none-eabi-gcc $GCC_OPTS"
 
@@ -33,7 +33,7 @@ $COMPILE -o OBJ/CirnOS.elf -T loader vectors.s main.c\
 	 LUA/lmathlib.c LUA/lmem.c LUA/loadlib.c LUA/lobject.c LUA/lopcodes.c LUA/loslib.c\
 	 LUA/lparser.c LUA/lstate.c LUA/lstring.c LUA/lstrlib.c LUA/ltable.c\
 	 LUA/ltablib.c LUA/ltm.c LUA/lundump.c LUA/lutf8lib.c LUA/lvm.c LUA/lzio.c\
-	 -L/usr/lib/arm-none-eabi/newlib/hard -lc -lgcc -lm
+	 -L/usr/lib/arm-none-eabi/newlib/hard -lc -lgcc -lnosys -lm
 
 # extract binary image from ELF executable
 arm-none-eabi-objcopy OBJ/CirnOS.elf -O binary OBJ/kernel.img

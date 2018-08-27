@@ -35,6 +35,8 @@
 #include <sys/stat.h>
 #include <sys/times.h>
 
+#include <stdio.h>
+
 extern int _open(const char *name, int flags, int mode);
 extern int _close(int file);
 extern int _read(int file, char *ptr, int len);
