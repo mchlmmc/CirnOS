@@ -1,20 +1,20 @@
 ![CirnOS Logo](logo.png)
 # CirnOS
-CirnOS is an operating system for the Raspberry Pi built for the purpose of usability and simplicity. It provides a simple environment for running a Lua script that will run on the Raspberry Pi. It has no kernel or time management -- it is single threaded. You run your code on the device, and that is it.
+CirnOS is an operating system for the Raspberry Pi built for the purpose of usability and simplicity. It provides a simple environment for running Lua scripts on Raspberry Pi. It has no kernel or time management -- it is single threaded. You run your code on the device, and that is it.
 
 CirnOS has only been tested on the Raspberry Pi Zero, but should work on the original Raspberry Pi and the Zero W.
 
 Why use CirnOS when there's Raspbian?
 -----
-Raspbian is very bloated for what most Raspberry Pi users need. The average rPi is used for one specific embedded task. It does not need a kernel, or different protection levels, or an operating system that can take up hundreds of megabytes.
+Raspbian is significantly more complex than what most Raspberry Pi users need. Often, an rPi is used for one specific embedded task. It does not need a kernel, or different protection levels, or an operating system taking up hundreds of megabytes.
 
-The workflow that Raspbian creates is also rather clunky. It requires the user to plug in a keyboard, mouse and screen into their Raspberry Pi to program and configure it, while the project that the rPi is used for might not need any of these peripherals.
+The workflow that Raspbian creates is also rather clunky. Without knowledge of SSH, it requires the user to plug in a keyboard, mouse and screen into their Raspberry Pi to program and configure it, while the project that the rPi is used for might not need any of these peripherals. Furthermore, setting up an application to run automatically is not straightforward given the tremendous number of ways to accomplish the task (CRON, systemd, initd, upstart, etc).
 
-It makes sense to have a lightweight, extensible system that allows a user to treat the rPi as an embedded device and edit its scripts directly from their computer.
+Therefore, it makes sense to have a lightweight, extensible system that allows a user to treat the rPi as an embedded device and edit its scripts directly from their computer.
 
 Current Bugs
 -----
-Currently Lua is not configured to only provide functions that CirnOS supports, meaning that a user might be able to call functions that break CirnOS.
+Currently Lua is only configured to provide functions that CirnOS supports, meaning that a user might be able to call functions that break CirnOS.
 
 Using CirnOS
 -----
