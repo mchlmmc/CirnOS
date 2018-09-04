@@ -16,16 +16,16 @@
 
 #!/bin/sh
 
-# stop on errors
+# Stop on errors
 set -e
 
-GCC_OPTS=" -Wall -O2 -nostartfiles -nostdlib -mhard-float -ffreestanding -mcpu=arm1176jzf-s -mfpu=vfp -fno-builtin -ISRC -I/usr/lib/arm-none-eabi/include -DCPU_ARM"
+GCC_OPTS=" -Wall -O2 -nostartfiles -nostdlib -ffreestanding -mcpu=arm1176jzf-s -mfpu=vfp -mhard-float -ISRC -I/usr/lib/arm-none-eabi/include"
 
 COMPILE="arm-none-eabi-gcc $GCC_OPTS"
 
-mkdir -p SOBJ
+mkdir -p OBJ
 
-$COMPILE -o SOBJ/CirnOS.elf -T SRC/loader SRC/vectors.s SRC/*.c SRC/LUA/*.c  -L/usr/lib/arm-none-eabi/newlib/hard -lc -lgcc -lnosys -lm
+$COMPILE -o OBJ/CirnOS.elf -T SRC/loader SRC/vectors.s SRC/*.c SRC/LUA/*.c  -L/usr/lib/arm-none-eabi/newlib/hard -lc -lgcc -lnosys -lm
 
-# extract binary image from ELF executable
-arm-none-eabi-objcopy SOBJ/CirnOS.elf -O binary SOBJ/kernel.img
+# Extract binary image from ELF executable
+arm-none-eabi-objcopy OBJ/CirnOS.elf -O binary OBJ/kernel.img
