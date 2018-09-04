@@ -26,7 +26,7 @@ COMPILE="arm-none-eabi-gcc $GCC_OPTS"
 mkdir -p OBJ
 
 $COMPILE -o OBJ/CirnOS.elf -T SRC/loader SRC/vectors.s SRC/main.c\
-	 SRC/hdmi.c SRC/bcm2835.c SRC/syscalls.c SRC/emmc.c SRC/ff.c SRC/diskio.c SRC/ffsystem.c SRC/ffunicode.c SRC/luabcm.c\
+	 SRC/hdmi.c SRC/bcm2835.c SRC/syscalls.c SRC/emmc.c SRC/ff.c SRC/diskio.c SRC/ffunicode.c SRC/luabcm.c\
 	 SRC/LUA/lapi.c SRC/LUA/lbaselib.c SRC/LUA/lauxlib.c SRC/LUA/lbitlib.c SRC/LUA/lcode.c\
 	 SRC/LUA/lcorolib.c SRC/LUA/lctype.c SRC/LUA/ldblib.c SRC/LUA/ldebug.c SRC/LUA/ldo.c\
 	 SRC/LUA/ldump.c SRC/LUA/lfunc.c SRC/LUA/lgc.c SRC/LUA/linit.c SRC/LUA/liolib.c SRC/LUA/llex.c\
