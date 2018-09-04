@@ -3,39 +3,22 @@
 // That project is licensed under GPL,
 // found at <https://github.com/mntmn/interim>
 
-/*
- * Based on code from NXP app note AN10916.
- */
-#include <stdint.h>
 #include <stdlib.h>
+
 #include "ff.h"
 #include "diskio.h"
-#include "malloc.h"
 #include "emmc.h"
 
-BYTE disk_current_status = STA_NOINIT;
+uint8_t disk_current_status = STA_NOINIT;
 
-void* sd_aligned_malloc(size_t required_bytes, size_t alignment) {
-  void* p1; // original block
-  void** p2; // aligned block
-  int offset = alignment - 1 + sizeof(void*);
-  if ((p1 = (void*)malloc(required_bytes + offset)) == NULL) {
-    return NULL;
-  }
-  p2 = (void**)(((size_t)(p1) + offset) & ~(alignment - 1));
-  p2[-1] = p1;
-  return p2;
-}
-
-void sd_aligned_free(void *p) {
-  free(((void**)p)[-1]);
-}
-
-/* disk_initialize
+/**
+ * disk_initialize - FatFs wrapper for sd init
  *
- * Set up the disk.
+ * @drv: The drive to init.
+ *
+ * Calls sd_card_init if drive is not 0.
  */
-DSTATUS disk_initialize (BYTE drv) {
+DSTATUS disk_initialize (uint8_t drv) {
   if(drv) return RES_ERROR;    
   if (sd_card_init() == 0) {
     disk_current_status &= ~STA_NOINIT;
@@ -44,11 +27,18 @@ DSTATUS disk_initialize (BYTE drv) {
   return disk_current_status;
 }
 
-/* disk_read
+/**
+ * disk_read - Read sectors of SD Card.
  *
- * Read some sectors.
+ * @drv: The drive to read from
+ * @buf: Memory to read to.
+ * @sector: Place on card to read.
+ * @count: Amount of sectors to read.
+ *
+ * Starting from sector, reads count
+ * sectors into buf.
  */
-DRESULT disk_read (BYTE drv, BYTE *buf, DWORD sector, UINT count) {
+DRESULT disk_read (uint8_t drv, uint8_t *buf, uint32_t sector, uint32_t count) {
   if(drv) return RES_ERROR;  
   if (sd_read(buf, sector, count) > 0)
     return RES_OK;
@@ -56,11 +46,18 @@ DRESULT disk_read (BYTE drv, BYTE *buf, DWORD sector, UINT count) {
     return RES_ERROR;
 }
 
-/* disk_write
+/**
+ * disk_write - Write sectors to SD Card
  *
- * Write some sectors.
+ * @drv: The drive to write to
+ * @buf: Memory to copy to card
+ * @sector: Place on card to write to
+ * @count: Amount of sectors to write
+ *
+ * Starting from sector, writes buf
+ * to card.
  */
-DRESULT disk_write (BYTE drv, BYTE *buf, DWORD sector, UINT count) {
+DRESULT disk_write (uint8_t drv, uint8_t *buf, uint32_t sector, uint32_t count) {
   if(drv) return RES_ERROR;
   if (sd_write(buf, sector, count) > 0)
     return RES_OK;
@@ -68,34 +65,41 @@ DRESULT disk_write (BYTE drv, BYTE *buf, DWORD sector, UINT count) {
     return RES_ERROR;
 }
 
-/* disk_status
+/**
+ * disk_status - Returns status of drive
  *
- * Check the status of this drive. All we know how to say is "initialized"
- * vs "uninitialized".
+ * @drv: The drive to check
+ *
+ * Returns the current status of SD Card.
  */
-DSTATUS disk_status (BYTE drv) {
+DSTATUS disk_status (uint8_t drv) {
   if(drv) return RES_ERROR;  
   return disk_current_status;
 }
 
-/* disk_ioctl
- *
- * Everything else.
+/**
+ * disk_ioctl - Only used by FatFs
+ * 
+ * Always returns true if the drive
+ * can be accessed.
  */
-DRESULT disk_ioctl (BYTE drv, BYTE ctrl, void *buf) {
+DRESULT disk_ioctl (uint8_t drv, uint8_t ctrl, void *buf) {
   if(drv) return RES_ERROR;  
   return RES_OK;
 }
 
-/*---------------------------------------------------------*/
-/* User Provided Timer Function for FatFs module           */
-/*---------------------------------------------------------*/
-DWORD get_fattime (void)
+/**
+ * get-fattime - Returns current time in FAT format.
+ *
+ * Returns the date 1999-9-9 in FAT format because
+ * CirnOS.
+ */
+uint32_t get_fattime (void)
 {
-  return  ((DWORD)(1999 - 1980) << 25)/* Year = 1999 */
-    | ((DWORD)9 << 21)/* Month = 9 */
-    | ((DWORD)9 << 16)/* Day_m = 9*/
-    | ((DWORD)0 << 11)/* Hour = 0 */
-    | ((DWORD)0 << 5)/* Min = 0 */
-    | ((DWORD)0 >> 1);/* Sec = 0 */
+  return  ((uint32_t)(1999 - 1980) << 25)/* Year = 1999 */
+    | ((uint32_t)9 << 21)/* Month = 9 */
+    | ((uint32_t)9 << 16)/* Day_m = 9*/
+    | ((uint32_t)0 << 11)/* Hour = 0 */
+    | ((uint32_t)0 << 5)/* Min = 0 */
+    | ((uint32_t)0 >> 1);/* Sec = 0 */
 }

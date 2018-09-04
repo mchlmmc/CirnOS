@@ -14,26 +14,38 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <stdint.h>
-#include <string.h>
 #include <stdio.h>
-#include <stdlib.h>
+
 #include "bcm2835.h"
 #include "hdmi.h"
 #include "ff.h"
-#include "LUA/lua.h"
 #include "luabcm.h"
+
+#include "LUA/lua.h"
 #include "LUA/lauxlib.h"
 #include "LUA/lualib.h"
 
-void print_init(){
-  printf("CirnOS Alpha Version 1.0\n");
+/**
+ * print_init - Prints initial messages.
+ * 
+ * Prints build version and copyright notice.
+ */
+void print_init()
+{
+  printf("CirnOS Alpha Version 2.0\n");
   printf("Copyright (c) 2018 Michael Mamic\n\n");
 }
 
-uint16_t notmain ( void )
+/**
+ * clear_bss - Clears .BSS section
+ * 
+ * CirnOS expects this section to be cleared
+ * with zeroes before running. Information on
+ * the layout of the CirnOS binary can be
+ * found in the loader linker script.
+ */
+void clear_bss()
 {
-  // Clear .BSS
   extern char _bss;  
   char *bss_addr = &_bss;
   extern char _end;  
@@ -42,16 +54,29 @@ uint16_t notmain ( void )
   while(bss_addr < end_addr) {
     *bss_addr = 0;
     bss_addr++;
-  }   
+  }
+}
 
-  // Initialize different components
+/**
+ * notmain - OS entry point
+ * 
+ * First code to be run in C, started by
+ * the init code in vectors.s.
+ * Responsible for booting the user into
+ * a Lua environment and initializing
+ * CirnOS's drivers and libraries.
+ */
+int notmain()
+{
+  clear_bss();
+  
   bcm2835_init();
   hdmi_init(SCREEN_WIDTH, SCREEN_HEIGHT, BIT_DEPTH);
   f_mount(&SDFS, "", 0);
   print_init();
 
   // Start Lua
-  lua_State *L = luaL_newstate();  
+  lua_State *L = luaL_newstate();
   luaL_openlibs(L);
 
   // CirnOS does not support these functions
