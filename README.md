@@ -12,10 +12,6 @@ The workflow that Raspbian creates is also rather clunky. Without knowledge of S
 
 Therefore, it makes sense to have a lightweight, extensible system that allows a user to treat the rPi as an embedded device and edit its scripts directly from their computer.
 
-Current Bugs
------
-Currently Lua is only configured to provide functions that CirnOS supports, meaning that a user might be able to call functions that break CirnOS.
-
 Using CirnOS
 -----
 - Format your rPi's SD card as FAT32, using a tool such as SD Association's SD Memory Card Formatter <https://www.sdcard.org/downloads/formatter_4/>.
@@ -26,20 +22,10 @@ Using CirnOS
 
 Building
 -----
-CirnOS currently can only be built on Mac and Linux devices. It requires an installation of Newlib for ARM, which can either be built by yourself with a bit of configuration or installed through a package such as libnewlib for Debian. Run the build.sh script to build kernel.img, configuring it as needed.
+Building CirnOS requires the GNU Arm Embedded Toolchain, which can be downloaded at <https://developer.arm.com/open-source/gnu-toolchain/gnu-rm>. Once the toolchain is installed, building CirnOS is as simple as running the build.sh script in the project directory. This process should work fine on computers running Linux, Mac OSX, or BSD. Windows users will have to edit build.sh to reflect where their GNU Arm Embedded Toolchain installation is located.
 
-Why 'CirnOS'?
+Why the name 'CirnOS'?
 -----
-CirnOS was built for use in my virtual pet project. This project was originally going to use 9front as its operating system, but I decided that 9front was too excessive for the tasks I needed my virtual pet to do. When I was using 9front it made sense to name my virtual pet after the mascot of the 9front operating system, the Touhou character Cirno. CirnOS is a portmanteau of Cirno and OS.
+CirnOS was built for use in my virtual pet project. This project was originally going to use 9front as its operating system, but I decided that 9front was too excessive for the tasks I needed my virtual pet to do. When I was using 9front it made sense to name my virtual pet after the mascot of the 9front operating system, the Touhou character Cirno. The name CirnOS is therefore a portmanteau of Cirno and OS.
 
 This may alienate some Touhou fans, but to differentiate CirnOS from the Touhou character, the preferred pronounciation of CirnOS is 'Sernos'.
-
-Todo
------
-- Sandbox and test Lua.
-- Make Lua wrappers for bcm2835 library.
-- Replace Lua interpreter with LuaJIT for speed.
-- Add a graphics library for HDMI.
-- Create plugins for IDEs to abstract away CirnOS (Like Arduino).
-- Add WiFi and HTTP server library.
-- Add USB connection library.
