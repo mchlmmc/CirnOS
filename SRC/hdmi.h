@@ -16,31 +16,30 @@
 
 #include <stdint.h>
 
-void hdmi_init(uint32_t screen_width, uint32_t screen_height, uint16_t bit_depth);
-void hdmi_clear_screen(uint16_t color);
-void hdmi_draw_char(char c, uint16_t x, uint16_t y);
+#ifndef HDMI_H
+#define HDMI_H
+
+void hdmi_init();
 void hdmi_write_char(char c);
-void hdmi_scroll_screen(uint8_t move_cursor);
 
-#define SCREEN_WIDTH 1600
-#define SCREEN_HEIGHT 900
+#define SCREEN_WIDTH            1600
+#define SCREEN_HEIGHT           900
 
-#define CHAR_W 8
-#define CHAR_H 12
-#define BIT_DEPTH 16
+#define CHAR_W                  8
+#define CHAR_H                  12
+#define BIT_DEPTH               16
 
-#define CONSOLE_WIDTH SCREEN_WIDTH / CHAR_W
-#define CONSOLE_HEIGHT SCREEN_HEIGHT / CHAR_H
+#define CONSOLE_WIDTH           SCREEN_WIDTH / CHAR_W
+#define CONSOLE_HEIGHT          SCREEN_HEIGHT / CHAR_H
 
-#define ORANGE   0xFD60
-#define BLACK    0x0000
-#define BLUE     0x001F
-#define RED      0xF800
-#define GREEN    0x07E0
-#define CYAN     0x07FF
-#define MAGENTA  0xF81F
-#define YELLOW   0xFFE0
-#define WHITE    0xFFFF
+#define ORANGE                  0xFD60
+#define BLACK                   0x0000
+#define BLUE                    0x001F
+#define RED                     0xF800
+#define GREEN                   0x07E0
+#define CYAN                    0x07FF
+#define MAGENTA                 0xF81F
+#define YELLOW                  0xFFE0
+#define WHITE                   0xFFFF
 
-extern uint16_t cursor_row;
-extern uint16_t cursor_column;
+#endif
