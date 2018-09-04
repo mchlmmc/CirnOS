@@ -14,38 +14,45 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <ff.h>
-#include <bcm2835.h>
-#include <hdmi.h>
 #include <errno.h>
 #include <stdint.h>
-#include <stddef.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/times.h>
+
+#include "ff.h"
+#include "hdmi.h"
+
 #undef errno
 extern int errno;
 
 #define MAX_OPEN_FILES 20
 FIL *openfiles[MAX_OPEN_FILES];
-char* highest_addr;
 
+/**
+ * _write - Writes bytes to a file
+ * 
+ * @file: File handle to write to
+ * @ptr: Pointer to bytes to write
+ * @len: Length of bytes to write
+ * 
+ * Prints to screen if the file handle
+ * is STDOUT or STDERR. Writes to file
+ * open at handle if the file is using
+ * FatFs.
+ */
 int _write(int file, char *ptr, int len) {
   static UINT blocksval;
-  // No support for STDIN
   if(file == 0) {
     errno = EBADF;
     return -1;
-  } else if (file < 3) {  // STDOUT and STDERR
+  } else if (file < 3) {
     for (uint32_t i  = 0; i < len; i++) {
       hdmi_write_char(*ptr++);
     }
     return len;
   }
-  // Write FAT32 file at handle
   if(openfiles[file-3] == NULL) {
     errno = EBADF;
     return -1;
@@ -59,6 +66,16 @@ int _write(int file, char *ptr, int len) {
   }  
 }
 
+/**
+ * _translateflags - Converts flags
+ * 
+ * @flags: Flags to convert
+ * 
+ * Newlib and FatFs use different schemes
+ * for flags. This function converts
+ * a flag value requested from newlib
+ * so FatFs can read it.
+ */
 int _translateflags(int flags) {
   // Read
   switch (flags) {
@@ -102,9 +119,21 @@ int _translateflags(int flags) {
   return flags;
 }
 
-// File controls
+/**
+ * _open - Opens a file.
+ * 
+ * @name: Path of file to open.
+ * @flags: Mode to parse file.
+ * @perms: Permissions of file (unused).
+ * 
+ * Looks for a file handle available.
+ * If there are already twenty files open
+ * then it returns an error.
+ * After, it tries to open the file at name.
+ * If it exists then it returns the file
+ * handle that it is assigned to.
+ */
 int _open(const char *name, int flags, int perms) {
-  // Find a handle
   flags = _translateflags(flags);
   uint8_t fd;
   for(fd = 0; fd < MAX_OPEN_FILES; fd++) {
@@ -115,6 +144,7 @@ int _open(const char *name, int flags, int perms) {
     errno = EMFILE;
     return -1;
   }
+  
   FIL *fp = malloc(sizeof(FIL));
   int res = f_open(fp, name, flags);
   if(res == FR_OK) {
@@ -124,17 +154,26 @@ int _open(const char *name, int flags, int perms) {
   return -1;
 }
 
+/**
+ * _close - Closes a file.
+ * 
+ * @file: Handle of file to close.
+ * 
+ * Closes the file at handle. If
+ * the file is not open or is 
+ * STDIN, STDOUT or STDERROR,
+ * then it returns an error.
+ */
 int _close(int file) {
-  // No way to close STDIN, STDOUT, or STDERROR
   if (file < 3) {
     errno = EBADF;
     return -1;    
   }
-  // Close FAT32 file at handle
   if(openfiles[file-3] == NULL) {
     errno = EBADF;
     return -1;
   }
+  
   if (f_close(openfiles[file-3]) == FR_OK) {
     openfiles[file-3] = NULL;
     return 0;
@@ -144,8 +183,20 @@ int _close(int file) {
   }
 }
 
+/**
+ * _lseek - Changes position in a file.
+ * 
+ * @file: Handle of file to change
+ * @offset: Relative position in file
+ * @origin: Where offset is measured
+ * from in the file.
+ * 
+ * Does not work for STDIN, STDOUT, or
+ * STDERR.
+ * Changes position in file used by
+ * getc, putc etc...
+ */
 int _read(int file, char *ptr, int len) {
-  // No way to read STDIN, STDOUT, or STDERROR
   if (file < 3) {
     errno = EBADF;
     return -1;    
@@ -154,10 +205,9 @@ int _read(int file, char *ptr, int len) {
     errno = EBADF;
     return -1;
   }
-  // Read FAT32 file at handle
+  
   UINT blockcount = 0;
   UINT *blocksread = &blockcount;
-  bcm2835_delay(1000);
   if (f_read(openfiles[file-3], ptr, len, blocksread) == FR_OK) {
     return blockcount;
   }
@@ -165,8 +215,20 @@ int _read(int file, char *ptr, int len) {
   return -1;
 }
 
-int _lseek(int file, int ptr, int dir) {
-  // No way to seek STDIN, STDOUT, or STDERROR
+/**
+ * _lseek - Changes position in a file.
+ * 
+ * @file: Handle of file to change
+ * @offset: Relative position in file
+ * @origin: Where offset is measured
+ * from in the file.
+ * 
+ * Does not work for STDIN, STDOUT, or
+ * STDERR.
+ * Changes position in file used by
+ * getc, putc etc...
+ */
+int _lseek(int file, int offset, int dir) {
   if (file < 3) {
     errno = EBADF;
     return -1;    
@@ -175,10 +237,10 @@ int _lseek(int file, int ptr, int dir) {
     errno = EBADF;
     return -1;
   }
-  // Seek FAT32 file at handle
+  
   FSIZE_t fpointer = openfiles[file-3]->fptr;
-  if(dir == 0) fpointer = ptr;
-  else if (dir == 1) fpointer = fpointer + ptr;
+  if(dir == 0) fpointer = offset;
+  else if (dir == 1) fpointer = fpointer + offset;
   // End of file not supported in FatFs library  
   else {
     errno = EINVAL;
@@ -196,14 +258,26 @@ int _lseek(int file, int ptr, int dir) {
   }
 }
 
+/**
+ * _fstat - Gets information on a file
+ * 
+ * @file: Handle of file to inspect.
+ * @st: Where the information will be
+ * returned to.
+ * 
+ * Most fields in st are not used by
+ * CirnOS, so these are left as zeros.
+ * Information is only provided for
+ * STDERR and STDOUT.
+ */
 int _fstat(int file, struct stat *st) {
   if(!file) {
     errno = ENOENT;
     return -1;
   } else if (file < 3) {
-    st->st_dev = 0;       /* ID of device containing file */
-    st->st_ino = file;    /* inode number */
-    st->st_mode = S_IFCHR;   /* protection */
+    st->st_dev = 0;
+    st->st_ino = file;
+    st->st_mode = S_IFCHR; 
     st->st_nlink = 0;
     st->st_uid = 0;
     st->st_gid = 0;
@@ -220,6 +294,11 @@ int _fstat(int file, struct stat *st) {
   return -1;
 }
 
+/**
+ * _link - Deletes a file or directory
+ * 
+ * @name: Name of file to delete.
+ */
 int _unlink(char *name) {
   if(f_unlink(name) == FR_OK) {
     return 0;
@@ -229,6 +308,15 @@ int _unlink(char *name) {
   }
 }
 
+/**
+ * _link - Renames a file
+ * 
+ * @name_old: Name of existing file.
+ * @name_new: New name for file.
+ *
+ * Uses FatFs library to rename file
+ * at path name_old to name_new.
+ */
 int _link(char *name_old, char *name_new) {
   if(f_rename(name_old, name_new) == FR_OK) {
     return 0;
@@ -238,14 +326,25 @@ int _link(char *name_old, char *name_new) {
   }
 }
 
-//  Start at the end of BSS segment and will increase until it reaches the maximum Pi memory.
+/**
+ * _sbrk - Requests memory for malloc
+ *
+ * @incr: Amount of memory to allocate.
+ *
+ * Gives chunk of memory starting at
+ * end of program. If the memory
+ * request exceeds the total rPi
+ * memory then throw an error.
+ */
 char *_sbrk(size_t incr) {
+  extern char RAM_AMOUNT;  
+  static char *max = &RAM_AMOUNT;  
   extern char _end;
-  static char* highest_addr = &_end;
+  static char *highest_addr = &_end;  
   char *prev_highest_addr;
 
   prev_highest_addr = highest_addr;
-  if((uint32_t)(highest_addr + incr) > (uint32_t)0x20000000) {
+  if(highest_addr + incr > max) {
     errno = ENOMEM;
     return (char*)-1;
   }
@@ -254,6 +353,17 @@ char *_sbrk(size_t incr) {
   return prev_highest_addr;
 }
 
+/**
+ * _gettimeofday - Gets time of day.
+ *
+ * @tv: Pointer to timeval for seconds
+ * to be returned in.
+ * @tz: Pointer to timezone for timezone
+ * data to be returned in.
+ * 
+ * Returns all zeros since the rPi
+ * has no built in RTC.
+ */
 int _gettimeofday(struct timeval *tv, struct timezone *tz) {
   tv->tv_sec = 0;
   tv->tv_usec = 0;
@@ -262,6 +372,14 @@ int _gettimeofday(struct timeval *tv, struct timezone *tz) {
   return 0;
 }
 
+/**
+ * _isatty - Check if file handle is a tty screen.
+ *
+ * @file: File handle to check
+ * 
+ * Always return true to enable maximum
+ * compatibility.
+ */
 int _isatty(int file) {
   return 1;
 }
