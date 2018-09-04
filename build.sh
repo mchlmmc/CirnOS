@@ -19,20 +19,20 @@
 # stop on errors
 set -e
 
-GCC_OPTS=" -Wall -O2 -nostartfiles -nostdlib -mhard-float -ffreestanding -mcpu=arm1176jzf-s -mfpu=vfp -fno-builtin -I. -I/usr/lib/arm-none-eabi/include -DCPU_ARM"
+GCC_OPTS=" -Wall -O2 -nostartfiles -nostdlib -mhard-float -ffreestanding -mcpu=arm1176jzf-s -mfpu=vfp -fno-builtin -ISRC -I/usr/lib/arm-none-eabi/include -DCPU_ARM"
 
 COMPILE="arm-none-eabi-gcc $GCC_OPTS"
 
 mkdir -p OBJ
 
-$COMPILE -o OBJ/CirnOS.elf -T loader vectors.s main.c\
-	 hdmi.c bcm2835.c syscalls.c emmc.c ff.c diskio.c ffsystem.c ffunicode.c luabcm.c\
-	 LUA/lapi.c LUA/lbaselib.c LUA/lauxlib.c LUA/lbitlib.c LUA/lcode.c\
-	 LUA/lcorolib.c LUA/lctype.c LUA/ldblib.c LUA/ldebug.c LUA/ldo.c\
-	 LUA/ldump.c LUA/lfunc.c LUA/lgc.c LUA/linit.c LUA/liolib.c LUA/llex.c\
-	 LUA/lmathlib.c LUA/lmem.c LUA/loadlib.c LUA/lobject.c LUA/lopcodes.c LUA/loslib.c\
-	 LUA/lparser.c LUA/lstate.c LUA/lstring.c LUA/lstrlib.c LUA/ltable.c\
-	 LUA/ltablib.c LUA/ltm.c LUA/lundump.c LUA/lutf8lib.c LUA/lvm.c LUA/lzio.c\
+$COMPILE -o OBJ/CirnOS.elf -T SRC/loader SRC/vectors.s SRC/main.c\
+	 SRC/hdmi.c SRC/bcm2835.c SRC/syscalls.c SRC/emmc.c SRC/ff.c SRC/diskio.c SRC/ffsystem.c SRC/ffunicode.c SRC/luabcm.c\
+	 SRC/LUA/lapi.c SRC/LUA/lbaselib.c SRC/LUA/lauxlib.c SRC/LUA/lbitlib.c SRC/LUA/lcode.c\
+	 SRC/LUA/lcorolib.c SRC/LUA/lctype.c SRC/LUA/ldblib.c SRC/LUA/ldebug.c SRC/LUA/ldo.c\
+	 SRC/LUA/ldump.c SRC/LUA/lfunc.c SRC/LUA/lgc.c SRC/LUA/linit.c SRC/LUA/liolib.c SRC/LUA/llex.c\
+	 SRC/LUA/lmathlib.c SRC/LUA/lmem.c SRC/LUA/loadlib.c SRC/LUA/lobject.c SRC/LUA/lopcodes.c SRC/LUA/loslib.c\
+	 SRC/LUA/lparser.c SRC/LUA/lstate.c SRC/LUA/lstring.c SRC/LUA/lstrlib.c SRC/LUA/ltable.c\
+	 SRC/LUA/ltablib.c SRC/LUA/ltm.c SRC/LUA/lundump.c SRC/LUA/lutf8lib.c SRC/LUA/lvm.c SRC/LUA/lzio.c\
 	 -L/usr/lib/arm-none-eabi/newlib/hard -lc -lgcc -lnosys -lm
 
 # extract binary image from ELF executable
