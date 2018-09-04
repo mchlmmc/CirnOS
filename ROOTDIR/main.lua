@@ -1,12 +1,12 @@
 ledPin = 47                    --> Initialize constant pin
 
-pinMode(ledPin, output)        --> Set pin 47 (LED) to output mode
+pinMode(ledPin, OUTPUT)        --> Set pin 47 (LED) to output mode
 
-print "I like blinking ^_^"    
+print "Hello, World."    
 
 while true do
    delay(500)                  --> Wait half a second
-   writePin(ledPin, on)        --> LED on
+   writePin(ledPin, ON)        --> LED on
    delay(500)   
-   writePin(ledPin, off)       --> LED off
+   writePin(ledPin, OFF)       --> LED off
 end
