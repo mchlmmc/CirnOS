@@ -16,12 +16,43 @@
 
 #include <stdint.h>
 
-extern void PUT32(unsigned int, unsigned int);
-extern void PUT16(unsigned int, unsigned int);
-extern void PUT8(unsigned int, unsigned int);
-extern unsigned int GET32(unsigned int);
-extern unsigned int GETPC(void);
-extern void dummy(unsigned int);
+#ifndef MACROS_H
+#define MACROS_H
+
+/**
+ * PUT32 - Moves 32 bit memory
+ * 
+ * @address: The address to write to.
+ * @value: The value to write at address. 
+ *
+ * Writes value to the memory address
+ * specified by address.
+ */
+extern void PUT32(uint32_t address, uint32_t value);
+
+/**
+ * PUT16 - Moves 16 bit memory
+ * 
+ * @address: The address to write to.
+ * @value: The value to write at address. 
+ *
+ * Writes value to the memory address
+ * specified by address.
+ */
+extern void PUT16(uint32_t address, uint16_t value);
+
+/**
+ * GET32 - Reads 32 bit memory
+ * 
+ * @address: The address to read from.
+ *
+ * Returns the 32 bits starting at
+ * the byte specified in address.
+ */
+extern uint32_t GET32(uint32_t address);
+
+// Cannot figure out what these do.
+// They originate from rpi-boot by jncronin.
 
 extern void memory_barrier();
 
@@ -39,7 +70,14 @@ inline uint32_t mmio_read(uintptr_t reg)
 	memory_barrier();
 }
 
-// Support for BE to LE conversion
+/**
+ * byte_swap - Converts BE to LE
+ * 
+ * @in: The value to convert
+ *
+ * Returns the in value swapped
+ * between BE to LE.
+ */
 #ifdef __GNUC__
 #define byte_swap __builtin_bswap32
 #else
@@ -53,3 +91,4 @@ static inline uint32_t byte_swap(uint32_t in)
   return ret;
 }
 #endif // __GNUC__
+#endif
