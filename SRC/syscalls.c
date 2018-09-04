@@ -42,28 +42,20 @@ FIL *openfiles[MAX_OPEN_FILES];
  * open at handle if the file is using
  * FatFs.
  */
-int _write(int file, char *ptr, int len) {
-  static UINT blocksval;
-  if(file == 0) {
-    errno = EBADF;
-    return -1;
-  } else if (file < 3) {
-    for (uint32_t i  = 0; i < len; i++) {
-      hdmi_write_char(*ptr++);
+int _write(int file, char *ptr, int len)
+{
+    static UINT blocksval;
+    UINT *blockswrote = &blocksval;
+    if (file >= 0 && file < 3) {
+        for (uint32_t i = 0; i < len; i++) {
+            hdmi_write_char(*ptr++);
+        }
+        return len;
+    } else if (openfiles[file - 3] && f_write(openfiles[file - 3], ptr, len, blockswrote) == FR_OK) {
+        return blocksval;
     }
-    return len;
-  }
-  if(openfiles[file-3] == NULL) {
     errno = EBADF;
     return -1;
-  }
-  UINT *blockswrote = &blocksval;
-  if (f_write(openfiles[file-3], ptr, len, blockswrote) == FR_OK) {
-    return blocksval;
-  } else {
-    errno = EBADF;
-    return -1;
-  }  
 }
 
 /**
@@ -76,47 +68,48 @@ int _write(int file, char *ptr, int len) {
  * a flag value requested from newlib
  * so FatFs can read it.
  */
-int _translateflags(int flags) {
-  // Read
-  switch (flags) {
-    // a+
-    // ab+
-  case 522:
-  case 66058:    
-    flags = FA_READ | FA_WRITE | FA_OPEN_APPEND;        
-    break;
-    // r+
-    // rb+
-    // w+
-    // wb+    
-  case 2:
-  case 65538:    
-  case 1538:
-  case 67074:        
-    flags = FA_READ | FA_WRITE;    
-    break;
-    // a
-    // ab
-  case 512:
-  case 66057:
-    flags = FA_WRITE | FA_CREATE_NEW | FA_OPEN_APPEND;
-    break;
-    // w
-    // wb
-  case 1537:
-  case 67073:    
-    flags = FA_WRITE | FA_CREATE_NEW | FA_OPEN_ALWAYS;
-    break;        
-    // r
-    // rb
-  case 65536:
-  case 0:    
-    flags = FA_READ;
-    break;
-  default:
-    break;
-  }
-  return flags;
+int _translateflags(int flags)
+{
+    // Read
+    switch (flags) {
+        // a+
+        // ab+
+    case 522:
+    case 66058:
+        flags = FA_READ | FA_WRITE | FA_OPEN_APPEND;
+        break;
+        // r+
+        // rb+
+        // w+
+        // wb+    
+    case 2:
+    case 65538:
+    case 1538:
+    case 67074:
+        flags = FA_READ | FA_WRITE;
+        break;
+        // a
+        // ab
+    case 512:
+    case 66057:
+        flags = FA_WRITE | FA_CREATE_NEW | FA_OPEN_APPEND;
+        break;
+        // w
+        // wb
+    case 1537:
+    case 67073:
+        flags = FA_WRITE | FA_CREATE_NEW | FA_OPEN_ALWAYS;
+        break;
+        // r
+        // rb
+    case 65536:
+    case 0:
+        flags = FA_READ;
+        break;
+    default:
+        break;
+    }
+    return flags;
 }
 
 /**
@@ -133,25 +126,28 @@ int _translateflags(int flags) {
  * If it exists then it returns the file
  * handle that it is assigned to.
  */
-int _open(const char *name, int flags, int perms) {
-  flags = _translateflags(flags);
-  uint8_t fd;
-  for(fd = 0; fd < MAX_OPEN_FILES; fd++) {
-    if(openfiles[fd] == NULL)
-      break;
-  }
-  if(openfiles[fd] != NULL) {
-    errno = EMFILE;
+int _open(const char *name, int flags, int perms)
+{
+    flags = _translateflags(flags);
+    uint8_t fd;
+    for (fd = 0; fd < MAX_OPEN_FILES; fd++) {
+        if (openfiles[fd] == NULL)
+            break;
+    }
+    if (fd == MAX_OPEN_FILES) {
+        errno = EMFILE;
+        return -1;
+    }
+
+    FIL *fp = malloc(sizeof(FIL));
+    if (!fp) {
+        return -1;
+    }
+    if (f_open(fp, name, flags) == FR_OK) {
+        openfiles[fd] = fp;
+        return fd + 3;
+    }
     return -1;
-  }
-  
-  FIL *fp = malloc(sizeof(FIL));
-  int res = f_open(fp, name, flags);
-  if(res == FR_OK) {
-    openfiles[fd] = fp;
-    return fd+3;
-  }
-  return -1;
 }
 
 /**
@@ -164,23 +160,16 @@ int _open(const char *name, int flags, int perms) {
  * STDIN, STDOUT or STDERROR,
  * then it returns an error.
  */
-int _close(int file) {
-  if (file < 3) {
-    errno = EBADF;
-    return -1;    
-  }
-  if(openfiles[file-3] == NULL) {
-    errno = EBADF;
-    return -1;
-  }
-  
-  if (f_close(openfiles[file-3]) == FR_OK) {
-    openfiles[file-3] = NULL;
-    return 0;
-  } else {
+int _close(int file)
+{
+    if (file >= 3 && openfiles[file - 3]) {
+        if (f_close(openfiles[file - 3]) == FR_OK) {
+            openfiles[file - 3] = NULL;
+            return 0;
+        }
+    }
     errno = EBADF;
     return -1;
-  }
 }
 
 /**
@@ -196,23 +185,18 @@ int _close(int file) {
  * Changes position in file used by
  * getc, putc etc...
  */
-int _read(int file, char *ptr, int len) {
-  if (file < 3) {
-    errno = EBADF;
-    return -1;    
-  }
-  if(openfiles[file-3] == NULL) {
+int _read(int file, char *ptr, int len)
+{
+
+    if (file >= 3 && openfiles[file - 3]) {
+        UINT blockcount = 0;
+        UINT *blocksread = &blockcount;
+        if (f_read(openfiles[file - 3], ptr, len, blocksread) == FR_OK) {
+            return blockcount;
+        }
+    }
     errno = EBADF;
     return -1;
-  }
-  
-  UINT blockcount = 0;
-  UINT *blocksread = &blockcount;
-  if (f_read(openfiles[file-3], ptr, len, blocksread) == FR_OK) {
-    return blockcount;
-  }
-  errno = EBADF;
-  return -1;
 }
 
 /**
@@ -228,34 +212,33 @@ int _read(int file, char *ptr, int len) {
  * Changes position in file used by
  * getc, putc etc...
  */
-int _lseek(int file, int offset, int dir) {
-  if (file < 3) {
-    errno = EBADF;
-    return -1;    
-  }
-  if(openfiles[file-3] == NULL) {
-    errno = EBADF;
-    return -1;
-  }
-  
-  FSIZE_t fpointer = openfiles[file-3]->fptr;
-  if(dir == 0) fpointer = offset;
-  else if (dir == 1) fpointer = fpointer + offset;
-  // End of file not supported in FatFs library  
-  else {
-    errno = EINVAL;
-    return -1;
-  }  
-  while(fpointer > FF_MAX_SS * SDFS.csize) {
-    fpointer -= FF_MAX_SS * SDFS.csize;
-    openfiles[file-1]->clust++;
-  }
-  if (f_lseek(openfiles[file-3], fpointer) == FR_OK) {
-    return fpointer;
-  } else {
-    errno = EBADF;
-    return -1;
-  }
+int _lseek(int file, int offset, int dir)
+{
+    if (file < 3 || !openfiles[file - 3]) {
+        errno = EBADF;
+        return -1;
+    }
+
+    FSIZE_t fpointer = openfiles[file - 3]->fptr;
+    if (dir == 0)
+        fpointer = offset;
+    else if (dir == 1)
+        fpointer = fpointer + offset;
+    // End of file not supported in FatFs library  
+    else {
+        errno = EINVAL;
+        return -1;
+    }
+    while (fpointer > FF_MAX_SS * SDFS.csize) {
+        fpointer -= FF_MAX_SS * SDFS.csize;
+        openfiles[file - 1]->clust++;
+    }
+    if (f_lseek(openfiles[file - 3], fpointer) == FR_OK) {
+        return fpointer;
+    } else {
+        errno = EBADF;
+        return -1;
+    }
 }
 
 /**
@@ -270,28 +253,29 @@ int _lseek(int file, int offset, int dir) {
  * Information is only provided for
  * STDERR and STDOUT.
  */
-int _fstat(int file, struct stat *st) {
-  if(!file) {
+int _fstat(int file, struct stat *st)
+{
+    if (!file) {
+        errno = ENOENT;
+        return -1;
+    } else if (file < 3) {
+        st->st_dev = 0;
+        st->st_ino = file;
+        st->st_mode = S_IFCHR;
+        st->st_nlink = 0;
+        st->st_uid = 0;
+        st->st_gid = 0;
+        st->st_rdev = 0;
+        st->st_size = SCREEN_WIDTH * SCREEN_HEIGHT * (BIT_DEPTH / 2);
+        st->st_blksize = 512;
+        st->st_blocks = ((SCREEN_WIDTH * SCREEN_HEIGHT) * (BIT_DEPTH * 2)) / 512;
+        st->st_atime = 0;
+        st->st_mtime = 0;
+        st->st_ctime = 0;
+        return 0;
+    }
     errno = ENOENT;
     return -1;
-  } else if (file < 3) {
-    st->st_dev = 0;
-    st->st_ino = file;
-    st->st_mode = S_IFCHR; 
-    st->st_nlink = 0;
-    st->st_uid = 0;
-    st->st_gid = 0;
-    st->st_rdev = 0;
-    st->st_size = SCREEN_WIDTH * SCREEN_HEIGHT * (BIT_DEPTH / 2);
-    st->st_blksize = 512;
-    st->st_blocks = ((SCREEN_WIDTH * SCREEN_HEIGHT) * (BIT_DEPTH * 2)) / 512;
-    st->st_atime = 0;
-    st->st_mtime = 0;
-    st->st_ctime = 0;
-    return 0;
-  }
-  errno = ENOENT;
-  return -1;
 }
 
 /**
@@ -299,13 +283,14 @@ int _fstat(int file, struct stat *st) {
  * 
  * @name: Name of file to delete.
  */
-int _unlink(char *name) {
-  if(f_unlink(name) == FR_OK) {
-    return 0;
-  } else {
-    errno = ENOENT;
-    return -1;
-  }
+int _unlink(char *name)
+{
+    if (f_unlink(name) == FR_OK) {
+        return 0;
+    } else {
+        errno = ENOENT;
+        return -1;
+    }
 }
 
 /**
@@ -317,13 +302,14 @@ int _unlink(char *name) {
  * Uses FatFs library to rename file
  * at path name_old to name_new.
  */
-int _link(char *name_old, char *name_new) {
-  if(f_rename(name_old, name_new) == FR_OK) {
-    return 0;
-  } else {
-    errno = ENOENT;
-    return -1;
-  }
+int _link(char *name_old, char *name_new)
+{
+    if (f_rename(name_old, name_new) == FR_OK) {
+        return 0;
+    } else {
+        errno = ENOENT;
+        return -1;
+    }
 }
 
 /**
@@ -336,21 +322,22 @@ int _link(char *name_old, char *name_new) {
  * request exceeds the total rPi
  * memory then throw an error.
  */
-char *_sbrk(size_t incr) {
-  extern char RAM_AMOUNT;  
-  static char *max = &RAM_AMOUNT;  
-  extern char _end;
-  static char *highest_addr = &_end;  
-  char *prev_highest_addr;
+char *_sbrk(size_t incr)
+{
+    extern char RAM_AMOUNT;
+    static char *max = &RAM_AMOUNT;
+    extern char _end;
+    static char *highest_addr = &_end;
+    char *prev_highest_addr;
 
-  prev_highest_addr = highest_addr;
-  if(highest_addr + incr > max) {
-    errno = ENOMEM;
-    return (char*)-1;
-  }
-  
-  highest_addr += incr; 
-  return prev_highest_addr;
+    prev_highest_addr = highest_addr;
+    if (highest_addr + incr > max) {
+        errno = ENOMEM;
+        return (char *)-1;
+    }
+
+    highest_addr += incr;
+    return prev_highest_addr;
 }
 
 /**
@@ -364,12 +351,13 @@ char *_sbrk(size_t incr) {
  * Returns all zeros since the rPi
  * has no built in RTC.
  */
-int _gettimeofday(struct timeval *tv, struct timezone *tz) {
-  tv->tv_sec = 0;
-  tv->tv_usec = 0;
-  tz->tz_minuteswest = 0;
-  tz->tz_dsttime = 0;
-  return 0;
+int _gettimeofday(struct timeval *tv, struct timezone *tz)
+{
+    tv->tv_sec = 0;
+    tv->tv_usec = 0;
+    tz->tz_minuteswest = 0;
+    tz->tz_dsttime = 0;
+    return 0;
 }
 
 /**
@@ -380,46 +368,56 @@ int _gettimeofday(struct timeval *tv, struct timezone *tz) {
  * Always return true to enable maximum
  * compatibility.
  */
-int _isatty(int file) {
-  return 1;
+int _isatty(int file)
+{
+    return 1;
 }
 
 // Unused syscalls (CirnOS provides no facilities for threading)
 char *__env[1] = { 0 };
+
 char **environ = __env;
 
-int _fini(int file) {
-  return 1;
+int _fini(int file)
+{
+    return 1;
 }
 
-int _times(struct tms *buf) {
-  return -1;
+int _times(struct tms *buf)
+{
+    return -1;
 }
 
-int _exit(int status) {
-  return -1;  
+int _exit(int status)
+{
+    return -1;
 }
 
-int _execve(char *name, char **argv, char **env) {
-  errno = ENOMEM;
-  return -1;
+int _execve(char *name, char **argv, char **env)
+{
+    errno = ENOMEM;
+    return -1;
 }
 
-int _fork(void) {
-  errno = EAGAIN;
-  return -1;
+int _fork(void)
+{
+    errno = EAGAIN;
+    return -1;
 }
 
-int _getpid(void) {
-  return 1;
+int _getpid(void)
+{
+    return 1;
 }
 
-int _kill(int pid, int sig) {
-  errno = EINVAL;
-  return -1;
+int _kill(int pid, int sig)
+{
+    errno = EINVAL;
+    return -1;
 }
 
-int _wait(int *status) {
-  errno = ECHILD;
-  return -1;
+int _wait(int *status)
+{
+    errno = ECHILD;
+    return -1;
 }
