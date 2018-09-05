@@ -57,6 +57,15 @@ void clear_bss()
   }
 }
 
+// PWM output on RPi Plug P1 pin 12 (which is GPIO pin 18)
+// in alt fun 5.
+// Note that this is the _only_ PWM pin available on the RPi IO headers
+#define PIN 18
+// and it is controlled by PWM channel 0
+#define PWM_CHANNEL 0
+// This controls the max range of the PWM signal
+#define RANGE 1024
+
 /**
  * notmain - OS entry point
  * 
@@ -70,7 +79,7 @@ int notmain()
 {
   clear_bss();
   
-  bcm2835_init();
+  bcm2835_init();  
   hdmi_init(SCREEN_WIDTH, SCREEN_HEIGHT, BIT_DEPTH);
   f_mount(&SDFS, "", 0);
   print_init();

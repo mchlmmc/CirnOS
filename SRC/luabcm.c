@@ -19,7 +19,10 @@
 #include "LUA/lua.h"
 #include "LUA/lauxlib.h"
 
-static int l_delay (lua_State *L) {
+uint32_t pwm_range = 256;
+
+static int l_delay (lua_State *L)
+{
   double d = luaL_checknumber(L, 1);
   if((double)(uint32_t)d == d) {
     bcm2835_delay((uint32_t)d);  
@@ -29,10 +32,11 @@ static int l_delay (lua_State *L) {
   return 0;
 }
 
-static int l_fsel (lua_State *L) {
+static int l_fsel (lua_State *L)
+{
   double p = luaL_checknumber(L, 1);
   if((double)(uint8_t)p != p) {
-    luaL_error(L, "BCM2835 Error: Invalid argument to pin (expected uint32_t).");
+    luaL_error(L, "BCM2835 Error: Invalid argument to pin (expected uint8_t).");
   }
   
   uint8_t pin = (uint8_t)p;
@@ -51,7 +55,8 @@ static int l_fsel (lua_State *L) {
   return 0;
 }
 
-static int l_write (lua_State *L) {
+static int l_write (lua_State *L)
+{
   double p = luaL_checknumber(L, 1);
   if((double)(uint8_t)p != p) {
     luaL_error(L, "BCM2835 Error: Invalid argument for pin (expected uint32_t).");
@@ -81,10 +86,11 @@ static int l_write (lua_State *L) {
   return 0;
 }
 
-static int l_lev (lua_State *L) {
+static int l_lev (lua_State *L)
+{
   double p = luaL_checknumber(L, 1);
   if((double)(uint8_t)p != p) {
-    luaL_error(L, "BCM2835 Error: Invalid argument for pin (expected uint32_t).");
+    luaL_error(L, "BCM2835 Error: Invalid argument for pin (expected uint8_t).");
   }
   
   uint8_t pin = (uint8_t)p;
@@ -92,6 +98,55 @@ static int l_lev (lua_State *L) {
   lua_pushboolean(L, bcm2835_gpio_lev(pin));
   
   return 1;
+}
+
+static int l_pwm_init (lua_State *L)
+{
+  bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_ALT5);
+  bcm2835_pwm_set_clock(BCM2835_PWM_CLOCK_DIVIDER_16);
+  bcm2835_pwm_set_mode(0, 1, 1);
+  bcm2835_pwm_set_range(0, 256);
+  bcm2835_pwm_set_data(0, 0);  
+  
+  return 0;
+}
+
+static int l_pwm_set_range (lua_State *L)
+{
+  double r = luaL_checknumber(L, 1);
+  if((double)(uint32_t)r != r) {
+    luaL_error(L, "BCM2835 Error: Invalid argument for range (expected uint32_t).");
+  }
+  
+  uint32_t range = (uint32_t)r;
+
+  if(!range) {
+    luaL_error(L, "BCM2835 Error: Range must be greater than 0.");
+  }
+
+  pwm_range = range;
+
+  bcm2835_pwm_set_range(0, range);   
+  
+  return 0;
+}
+
+static int l_pwm_write (lua_State *L)
+{
+  double d = luaL_checknumber(L, 1);
+  if((double)(uint32_t)d != d) {
+    luaL_error(L, "BCM2835 Error: Invalid argument for data (expected uint32_t).");
+  }
+
+  uint32_t data = (uint32_t)d;
+
+  if(data >= pwm_range) {
+    luaL_error(L, "BCM2835 Error: PWM data must be below range.");
+  }
+
+  bcm2835_pwm_set_data(0, data);    
+  
+  return 0;
 }
 
 /**
@@ -103,7 +158,8 @@ static int l_lev (lua_State *L) {
  * functions to allow Lua user code to
  * access the rPi's peripherals.t
  */
-void luabcm_register(lua_State *L) {
+void luabcm_register(lua_State *L)
+{
   lua_pushcfunction(L, l_delay);
   lua_setglobal(L, "delay");
   lua_pushcfunction(L, l_fsel);
@@ -112,6 +168,12 @@ void luabcm_register(lua_State *L) {
   lua_setglobal(L, "writePin");
   lua_pushcfunction(L, l_lev);
   lua_setglobal(L, "readPin");
+  lua_pushcfunction(L, l_pwm_init);
+  lua_setglobal(L, "beginPWM");
+  lua_pushcfunction(L, l_pwm_set_range);
+  lua_setglobal(L, "setPWMRange");
+  lua_pushcfunction(L, l_pwm_write);
+  lua_setglobal(L, "writePWM");      
   
   lua_pushboolean(L, 1);
   lua_setglobal(L, "ON");
