@@ -20,9 +20,16 @@ Using CirnOS
 - Copy kernel.img from OBJ into the root of the SD Card.
 - Edit main.lua to control the rPi.
 
-Building
+# Building
+Arch Linux
 -----
-Building CirnOS requires the GNU Arm Embedded Toolchain, which can be downloaded at <https://developer.arm.com/open-source/gnu-toolchain/gnu-rm>. Once the toolchain is installed, building CirnOS is as simple as running the build.sh script in the project directory. This process should work fine on computers running Linux, Mac OSX, or BSD. Windows users will have to edit build.sh to reflect where their GNU Arm Embedded Toolchain installation is located.
+
+Building CirnOS on Arch Linux requires an installation of the GNU Arm Embedded Toolchain, which can be found at <https://www.archlinux.org/packages/community/x86_64/arm-none-eabi-gcc/>.
+Once installed, run build.sh in the project directory to create the kernel.img in the object folder.
+
+Fedora
+-----
+Building CirnOS on Fedora requires a full installation of the GNU Arm Embedded Toolchain, which can be set up by first installing the relevant binutils package found at <https://rpmfind.net/linux/rpm2html/search.php?query=arm-none-eabi-gcc> and then installing Newlib, which can be found at <https://apps.fedoraproject.org/packages/arm-none-eabi-newlib>. Following installation, run build.sh in the project directory to create the kernel.img file in the object folder.
 
 Why the name 'CirnOS'?
 -----
