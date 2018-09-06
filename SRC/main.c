@@ -57,15 +57,6 @@ void clear_bss()
   }
 }
 
-// PWM output on RPi Plug P1 pin 12 (which is GPIO pin 18)
-// in alt fun 5.
-// Note that this is the _only_ PWM pin available on the RPi IO headers
-#define PIN 18
-// and it is controlled by PWM channel 0
-#define PWM_CHANNEL 0
-// This controls the max range of the PWM signal
-#define RANGE 1024
-
 /**
  * notmain - OS entry point
  * 
@@ -75,6 +66,8 @@ void clear_bss()
  * a Lua environment and initializing
  * CirnOS's drivers and libraries.
  */
+
+// Wait 10 seconds and hold on sharp angle
 int notmain()
 {
   clear_bss();
@@ -82,7 +75,7 @@ int notmain()
   bcm2835_init();  
   hdmi_init(SCREEN_WIDTH, SCREEN_HEIGHT, BIT_DEPTH);
   f_mount(&SDFS, "", 0);
-  print_init();
+  print_init();   
 
   // Start Lua
   lua_State *L = luaL_newstate();
@@ -115,7 +108,7 @@ int notmain()
   if (luaL_dofile(L, "main.lua")) {
     char const *errmsg = lua_tostring(L, 1);
     printf("Failed to execute main.lua:\n%s\n", errmsg);
-  }
+  }  
 
   lua_close(L);
 

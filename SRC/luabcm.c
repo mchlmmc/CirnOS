@@ -149,6 +149,119 @@ static int l_pwm_write (lua_State *L)
   return 0;
 }
 
+static int l_spi_begin (lua_State *L)
+{
+  bcm2835_spi_begin();      
+  return 0;
+}
+
+static int l_spi_set_data_mode (lua_State *L)
+{
+  double o = luaL_checknumber(L, 1);
+  if((double)(uint8_t)o != o) {
+    luaL_error(L, "BCM2835 Error: Invalid argument for mode (expected uint8_t).");
+  }
+
+  uint8_t mode = (uint8_t)o;
+
+  if(mode >= 4) {
+    luaL_error(L, "BCM2835 Error: Mode must be from SPI_MODE0, SPI_MODE1, SPI_MODE2 or SPI_MODE3");
+  }
+
+  bcm2835_spi_setDataMode(mode);    
+  
+  return 0;
+}
+
+static int l_spi_chip_select (lua_State *L)
+{
+  double c = luaL_checknumber(L, 1);
+  if((double)(uint8_t)c != c) {
+    luaL_error(L, "BCM2835 Error: Invalid argument for cs (expected uint8_t).");
+  }
+
+  uint8_t cs = (uint8_t)c;
+
+  if(cs >= 4) {
+    luaL_error(L, "BCM2835 Error: Mode must be from SPI_CS0, SPI_CS1, SPI_CS2 or SPI_CS_NONE");
+  }
+
+  bcm2835_spi_chipSelect(cs);    
+  
+  return 0;
+}
+
+static int l_spi_chip_select_polarity (lua_State *L)
+{
+  double c = luaL_checknumber(L, 1);
+  if((double)(uint8_t)c != c) {
+    luaL_error(L, "BCM2835 Error: Invalid argument for mode (expected uint8_t).");
+  }
+
+  uint8_t mode = (uint8_t)c;
+
+  if(mode >= 4) {
+    luaL_error(L, "BCM2835 Error: Mode must be from SPI_MODE0, SPI_MODE1, SPI_MODE2 or SPI_MODE3");
+  }
+
+  int p = 0;
+
+  switch(lua_type(L, 2)) {
+  case LUA_TBOOLEAN:
+    p = lua_toboolean(L, 2);
+    break;
+  case LUA_TNUMBER:
+    p = lua_tonumber(L, 2);
+    break;
+  default:
+    luaL_error(L, "BCM2835 Error: Invalid type for polarity (expected boolean or number).");    
+    break;
+  }  
+
+  bcm2835_spi_setChipSelectPolarity(mode, p);
+  
+  return 0;
+}
+
+static int l_spi_set_clock_divider (lua_State *L)
+{
+  double d = luaL_checknumber(L, 1);
+  if((double)(uint16_t)d != d) {
+    luaL_error(L, "BCM2835 Error: Invalid argument for divider (expected uint16_t).");
+  }
+
+  uint16_t divider = (uint16_t)d;
+
+  uint8_t pow = 0;
+
+  for(uint16_t i = 1; i <= 32768; i *= 2) {
+    if(divider == i) {
+      pow = 1;
+      break;
+    }
+  }
+
+  if(!pow) {
+    luaL_error(L, "BCM2835 Error: Divider must be a power of two.");
+  }
+
+  bcm2835_spi_setClockDivider(divider);    
+  
+  return 0;
+}
+
+static int l_spi_transfer (lua_State *L)
+{
+  double d = luaL_checknumber(L, 1);
+  if((double)(uint8_t)d != d) {
+    luaL_error(L, "BCM2835 Error: Invalid argument for value (expected uint8_t).");
+  }
+
+  bcm2835_spi_transfer((uint8_t)d);
+  
+  return 0;
+}
+
 /**
  * luabcm_register - Adds BCM library to Lua
  *
@@ -169,12 +282,27 @@ void luabcm_register(lua_State *L)
   lua_pushcfunction(L, l_lev);
   lua_setglobal(L, "readPin");
   lua_pushcfunction(L, l_pwm_init);
+  
   lua_setglobal(L, "beginPWM");
   lua_pushcfunction(L, l_pwm_set_range);
   lua_setglobal(L, "setPWMRange");
   lua_pushcfunction(L, l_pwm_write);
-  lua_setglobal(L, "writePWM");      
+  lua_setglobal(L, "writePWM");
+  lua_pushcfunction(L, l_spi_begin);
   
+  lua_setglobal(L, "beginSPI");
+  lua_pushcfunction(L, l_spi_set_data_mode);  
+  lua_setglobal(L, "setSPIDataMode");
+  lua_pushcfunction(L, l_spi_set_clock_divider);  
+  lua_setglobal(L, "setSPIClockDivider");
+  lua_pushcfunction(L, l_spi_chip_select_polarity);
+  lua_setglobal(L, "setSPIChipSelectPolarity");
+  lua_pushcfunction(L, l_spi_chip_select);
+  lua_setglobal(L, "setSPIChipSelect");  
+  lua_pushcfunction(L, l_spi_transfer);  
+  lua_setglobal(L, "writeByteSPI");    
+
+  // Global
   lua_pushboolean(L, 1);
   lua_setglobal(L, "ON");
   lua_pushboolean(L, 0);
@@ -182,5 +310,55 @@ void luabcm_register(lua_State *L)
   lua_pushnumber(L, 0);  
   lua_setglobal(L, "INPUT");
   lua_pushnumber(L, 1);
-  lua_setglobal(L, "OUTPUT");      
+  lua_setglobal(L, "OUTPUT");
+  // SPI
+  lua_pushnumber(L, 0);
+  lua_setglobal(L, "SPI_MODE0");
+  lua_pushnumber(L, 1);
+  lua_setglobal(L, "SPI_MODE1");
+  lua_pushnumber(L, 2);
+  lua_setglobal(L, "SPI_MODE2");
+  lua_pushnumber(L, 3);
+  lua_setglobal(L, "SPI_MODE3");
+  lua_pushnumber(L, 0);  
+  lua_setglobal(L, "SPI_CS0");
+  lua_pushnumber(L, 1);  
+  lua_setglobal(L, "SPI_CS1");
+  lua_pushnumber(L, 2);  
+  lua_setglobal(L, "SPI_CS2");
+  lua_pushnumber(L, 3);  
+  lua_setglobal(L, "SPI_CS_NONE");    
+  // Dividers
+  lua_pushnumber(L, 32768);
+  lua_setglobal(L, "DIVIDER_32768");
+  lua_pushnumber(L, 16384);
+  lua_setglobal(L, "DIVIDER_16384");
+  lua_pushnumber(L, 8192);
+  lua_setglobal(L, "DIVIDER_8192");
+  lua_pushnumber(L, 4096);
+  lua_setglobal(L, "DIVIDER_4096");
+  lua_pushnumber(L, 2048);
+  lua_setglobal(L, "DIVIDER_2048");
+  lua_pushnumber(L, 1024);
+  lua_setglobal(L, "DIVIDER_1024");
+  lua_pushnumber(L, 512);
+  lua_setglobal(L, "DIVIDER_512");
+  lua_pushnumber(L, 256);
+  lua_setglobal(L, "DIVIDER_256");
+  lua_pushnumber(L, 128);
+  lua_setglobal(L, "DIVIDER_128");
+  lua_pushnumber(L, 64);
+  lua_setglobal(L, "DIVIDER_64");
+  lua_pushnumber(L, 32);
+  lua_setglobal(L, "DIVIDER_32");
+  lua_pushnumber(L, 16);
+  lua_setglobal(L, "DIVIDER_16");
+  lua_pushnumber(L, 8);
+  lua_setglobal(L, "DIVIDER_8");
+  lua_pushnumber(L, 4);
+  lua_setglobal(L, "DIVIDER_4");
+  lua_pushnumber(L, 2);
+  lua_setglobal(L, "DIVIDER_2");
+  lua_pushnumber(L, 1);
+  lua_setglobal(L, "DIVIDER_1");  
 }
