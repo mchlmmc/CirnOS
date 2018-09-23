@@ -16,7 +16,7 @@
 
 #include "bcm2835.h"
 #include "stdio.h"
-#include "LUA/lua.h"
+#include "LUA/luajit.h"
 #include "LUA/lauxlib.h"
 
 uint32_t pwm_range = 256;

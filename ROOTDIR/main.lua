@@ -2,7 +2,7 @@ ledPin = 47                    --> Initialize constant pin
 
 pinMode(ledPin, OUTPUT)        --> Set pin 47 (LED) to output mode
 
-print "Hello, World."    
+print "Hello, World."
 
 while true do
    delay(500)                  --> Wait half a second

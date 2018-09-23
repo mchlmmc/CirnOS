@@ -28,5 +28,7 @@ SECTIONS
     .data : { *(.data*) } > ram    
     _bss = .;        
     .bss : { *(.bss*) } > ram
-    _end = .;    
+    _end = .;
+    __exidx_start = .;
+    __exidx_end = .;
 }

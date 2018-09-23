@@ -21,7 +21,7 @@
 #include "ff.h"
 #include "luabcm.h"
 
-#include "LUA/lua.h"
+#include "LUA/luajit.h"
 #include "LUA/lauxlib.h"
 #include "LUA/lualib.h"
 
@@ -32,7 +32,7 @@
  */
 void print_init()
 {
-  printf("CirnOS Alpha Version 2.0\n");
+  printf("CirnOS Alpha Version 3.0\n");
   printf("Copyright (c) 2018 Michael Mamic\n\n");
 }
 
@@ -57,6 +57,11 @@ void clear_bss()
   }
 }
 
+int abort()
+{
+  for(;;) {}
+}
+
 /**
  * notmain - OS entry point
  * 
@@ -67,7 +72,6 @@ void clear_bss()
  * CirnOS's drivers and libraries.
  */
 
-// Wait 10 seconds and hold on sharp angle
 int notmain()
 {
   clear_bss();
@@ -111,6 +115,8 @@ int notmain()
   }  
 
   lua_close(L);
+
+  // This should only be run on errors. Lua code should end in a loop.
 
   return 0;
 }

@@ -25,7 +25,7 @@ COMPILE="arm-none-eabi-gcc $GCC_OPTS"
 
 mkdir -p OBJ
 
-$COMPILE -o OBJ/CirnOS.elf -T SRC/loader SRC/vectors.s SRC/*.c SRC/LUA/*.c  -L/usr/lib/arm-none-eabi/newlib/hard -lc -lgcc -lnosys -lm
+$COMPILE -o OBJ/CirnOS.elf -T SRC/loader SRC/vectors.s SRC/*.c -L. -lluajit -L/usr/lib/arm-none-eabi/newlib/hard -lc -lgcc -lnosys -lm
 
 # Extract binary image from ELF executable
 arm-none-eabi-objcopy OBJ/CirnOS.elf -O binary OBJ/kernel.img
