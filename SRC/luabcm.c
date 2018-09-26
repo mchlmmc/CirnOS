@@ -94,7 +94,8 @@ static int l_lev (lua_State *L)
   }
   
   uint8_t pin = (uint8_t)p;
-
+  
+  lua_checkstack(L, 1);
   lua_pushboolean(L, bcm2835_gpio_lev(pin));
   
   return 1;
