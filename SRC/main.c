@@ -288,7 +288,7 @@ int notmain()
   
   // This should only be run on errors. Lua code should end in a loop.
   printf("Warning: Lua code should end in a loop!\n");
-  while(bcm2835_delay((uint32_t) 1000));
+  while(1) bcm2835_delay((uint32_t) 1000);
 
   return 0;
 }
