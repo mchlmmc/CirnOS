@@ -14,18 +14,43 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Stop on errors
 set -e
 
-GCC_OPTS=" -Wall -O2 -nostartfiles -nostdlib -ffreestanding -mcpu=arm1176jzf-s -mfpu=vfp -mhard-float -ISRC -I/usr/lib/arm-none-eabi/include"
 
-COMPILE="arm-none-eabi-gcc $GCC_OPTS"
+GCC_OPTS=-nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mfpu=vfp -mhard-float
+GCC_LIBS=-lluajit -lc -lgcc -lnosys -lm
+
+# Switch custom parameters
+if [[ -z $CC ]]; then
+  CC=arm-none-eabi-gcc
+fi
+if [[ -z $OBJCOPY ]]; then
+  OBJCOPY=arm-none-eabi-objcopy
+fi
+if [[ -z $CFLAGS ]]; then
+  CFLAGS=-Wall -g0 -O2 -nostdlib
+fi
+if [[ -z $INC ]]; then
+  INC=-I. -ISRC -I/usr/lib/arm-none-eabi/include
+fi
+if [[ -z $LIBS ]]; then
+  LIBS=-L. -LSRC -L/usr/lib/arm-none-eabi/newlib/hard
+fi
 
 mkdir -p OBJ
 
-$COMPILE -o OBJ/CirnOS.elf -T SRC/loader SRC/vectors.s SRC/*.c -L. -lluajit -L/usr/lib/arm-none-eabi/newlib/hard -lc -lgcc -lnosys -lm
+
+# Compile OS
+$CC $CFLAGS $GCC_OPTS $INC $LIBS -c SRC/*.c SRC/*.s
+mv -u *.o OBJ
+
+# Link OS
+$CC $CFLAGS $GCC_OPTS $INC $LIBS -o CirnOS.elf -T SRC/linker.ld OBJ/*.o $GCC_LIBS
+mv -u *.elf OBJ
+mv -u *.img OBJ
 
 # Extract binary image from ELF executable
-arm-none-eabi-objcopy OBJ/CirnOS.elf -O binary OBJ/kernel.img
+$OBJCOPY OBJ/CirnOS.elf -O binary OBJ/kernel.img
