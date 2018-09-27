@@ -175,8 +175,8 @@ static int l_print_error(lua_State *L) {
   luaL_traceback(L, L, "--", 1);
   tb = lua_tostring(L, -1);
   top = lua_gettop(L);
-  printf(stderr, " (Runtime) | Stack Top: %zu | %s%s\n", top, msg, type);
-  printf(stderr, "%s\n", tb);
+  printf(" (Runtime) | Stack Top: %zu | %s%s\n", top, msg, type);
+  printf("%s\n", tb);
   if(top > 1)
     stack_dump(L);
   // Note: Shouldn't pop arguments
@@ -211,7 +211,7 @@ static void print_error(LuaError error, int offset) {
     printf(" (Internal)");
     break;
   case SYNTAX_ERROR:
-    printf(stderr, " (Syntax)");
+    printf(" (Syntax)");
     break;
   case RUNTIME_ERROR:
     printf(" (Runtime)");
