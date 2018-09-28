@@ -21,9 +21,10 @@
 #include "ff.h"
 #include "luabcm.h"
 
-#include "LUA/luajit.h"
-#include "LUA/lauxlib.h"
+#include "LUA/lua.h"
 #include "LUA/lualib.h"
+#include "LUA/lauxlib.h"
+#include "LUA/luajit.h"
 
 
 #ifndef DEFAULT_MAIN
@@ -135,7 +136,7 @@ static int stack_dump(lua_State *L) {
  * be raised. Probably because variables
  * not being setup properly.
  */
-static const char *error_test_meta(const char **out_type) {
+static const char *error_test_meta(lua_State *L, const char **out_type) {
     static const char *msg;
     static int meta;
     static int ret;
@@ -170,7 +171,7 @@ static int l_print_error(lua_State *L) {
     static const char *tb;
     static size_t top;
   
-  msg = error_test_meta(&type);
+  msg = error_test_meta(L, &type);
   lua_pop(L, 1); // err msg
   luaL_traceback(L, L, "--", 1);
   tb = lua_tostring(L, -1);
@@ -200,12 +201,12 @@ typedef enum LuaError {
  * `offset` - bool whether err handler
  *   is present.
  */
-static void print_error(LuaError error, int offset) {
+static void print_error(lua_State *L, LuaError error, int offset) {
     static const char *type;
     static const char *msg;
     static size_t top;
   
-  msg = error_test_meta(&type);
+  msg = error_test_meta(L, &type);
   switch(error) {
   case INTERNAL_ERROR:
     printf(" (Internal)");
@@ -249,22 +250,23 @@ int notmain()
 
   // Start Lua
   lua_State *L;
-  if ((L = luaL_newstate()) != 0) {
+  if ((L = luaL_newstate()) == 0) {
     perror("Error creating Lua state");
     return 0;
   }
   
-  luaopen_base(L);
-  luaopen_math(L);
-  luaopen_string(L);
-  luaopen_table(L);
-  luaopen_io(L);
-  // luaopen_os(L); // unsupported
-  luaopen_package(L);
-  luaopen_debug(L);
-  luaopen_bit(L);
-  luaopen_jit(L);
-  luaopen_ffi(L);
+  // Open Libraries
+  lua_pushcclosure(L, luaopen_base, 0); lua_pcall(L, 0, 0, 0);
+  lua_pushcclosure(L, luaopen_math, 0); lua_pcall(L, 0, 0, 0);
+  lua_pushcclosure(L, luaopen_string, 0); lua_pcall(L, 0, 0, 0);
+  lua_pushcclosure(L, luaopen_table, 0); lua_pcall(L, 0, 0, 0);
+  lua_pushcclosure(L, luaopen_io, 0); lua_pcall(L, 0, 0, 0);
+  // lua_pushcclosure(L, luaopen_os, 0); lua_pcall(L, 0, 0, 0); // unsupported
+  lua_pushcclosure(L, luaopen_package, 0); lua_pcall(L, 0, 0, 0);
+  lua_pushcclosure(L, luaopen_debug, 0); lua_pcall(L, 0, 0, 0);
+  lua_pushcclosure(L, luaopen_bit, 0); lua_pcall(L, 0, 0, 0);
+  lua_pushcclosure(L, luaopen_jit, 0); lua_pcall(L, 0, 0, 0);
+  // lua_pushcclosure(L, luaopen_ffi, 0); lua_pcall(L, 0, 0, 0); // unsupported
   
   luabcm_register(L);
   
@@ -273,7 +275,7 @@ int notmain()
   base = lua_gettop(L);
   status = 0;
   if((status = luaL_loadfile(L, DEFAULT_MAIN)) != 0) {
-    print_error(SYNTAX_ERROR, 1);
+    print_error(L, SYNTAX_ERROR, 1);
     lua_pop(L, 2); // err msg, err handler
     return 0;
   }
