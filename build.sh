@@ -34,23 +34,26 @@ if [[ -z $CFLAGS ]]; then
   CFLAGS=-Wall -g0 -O2 -nostdlib
 fi
 if [[ -z $INC ]]; then
-  INC=-I. -ISRC -I/usr/lib/arm-none-eabi/include
+  INC=-I. -Isrc -Iinclude -I/usr/lib/arm-none-eabi/include
 fi
 if [[ -z $LIBS ]]; then
-  LIBS=-L. -LSRC -L/usr/lib/arm-none-eabi/newlib/hard
+  LIBS=-L. -Lsrc -Llib -L/usr/lib/arm-none-eabi/newlib/hard
 fi
 
-mkdir -p OBJ
+mkdir -p obj
+mkdir -p bin
 
 
 # Compile OS
-$CC $CFLAGS $GCC_OPTS $INC $LIBS -c SRC/*.c SRC/*.s
-mv -u *.o OBJ
+$CC $CFLAGS $GCC_OPTS $INC $LIBS -c src/*.c src/*.s
+mv -u *.o obj
 
 # Link OS
-$CC $CFLAGS $GCC_OPTS $INC $LIBS -o CirnOS.elf -T SRC/linker.ld OBJ/*.o $GCC_LIBS
-mv -u *.elf OBJ
-mv -u *.img OBJ
+$CC $CFLAGS $GCC_OPTS $INC $LIBS -o CirnOS.elf -T src/linker.ld obj/*.o $GCC_LIBS
+mv -u *.elf obj
+mv -u *.img obj
 
-# Extract binary image from ELF executable
-$OBJCOPY OBJ/CirnOS.elf -O binary OBJ/kernel.img
+# Extract binary image from ELF executable, load  into common dir
+$OBJCOPY obj/CirnOS.elf -O binary bin/kernel.img
+cp root/* bin/
+

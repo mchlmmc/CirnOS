@@ -13,9 +13,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
-#!/bin/sh
 
-./build.sh
-sudo mount /dev/sdb1 /mnt
-sudo cp OBJ/kernel.img /mnt/kernel.img
-sudo umount /mnt
+#!/usr/bin/env bash
+
+# Stop on errors
+set -e
+
+mount /dev/sdb1 /cirnosmnt
+cp obj/kernel.img /cirnosmnt/kernel.img
+umount /cirnosmnt

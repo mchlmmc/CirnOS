@@ -30,10 +30,11 @@
  * Broadcom BCM2835 Peripherals Guide
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "macros.h"
 #include "bcm2835.h"
 
