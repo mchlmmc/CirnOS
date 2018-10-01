@@ -40,8 +40,9 @@ if [[ -z $LIBS ]]; then
   LIBS=-L. -Lsrc -Llib -L/usr/lib/arm-none-eabi/newlib/hard
 fi
 
+
 mkdir -p obj
-mkdir -p bin
+mkdir -p bin/test
 
 
 # Compile OS
@@ -56,4 +57,4 @@ mv -u *.img obj
 # Extract binary image from ELF executable, load  into common dir
 $OBJCOPY obj/CirnOS.elf -O binary bin/kernel.img
 cp root/* bin/
-
+cp test/* bin/test

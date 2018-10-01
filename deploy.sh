@@ -19,6 +19,18 @@
 # Stop on errors
 set -e
 
-mount /dev/sdb1 /cirnosmnt
-cp obj/kernel.img /cirnosmnt/kernel.img
-umount /cirnosmnt
+if [[ -z $DIR ]]; then
+	echo Please set DIR to the mount destination. Ex: /cirnosmt/
+	exit 1
+fi
+
+if [[ -z $SM ]]; then
+	if [[ -z $USB ]]; then
+		echo Please set USB to the mounting device. Ex: /dev/sdb1
+		exit 1
+	fi
+	mount $USB $DIR
+fi
+
+cp obj/kernel.img $DIR/kernel.img
+umount $DIR
