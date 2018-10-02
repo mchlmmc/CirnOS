@@ -25,11 +25,11 @@ if [[ -z $DIR ]]; then
 fi
 
 if [[ -z $SM ]]; then
-	if [[ -z $USB ]]; then
-		echo Please set USB to the mounting device. Ex: /dev/sdb1
+	if [[ -z $SD ]]; then
+		echo Please set SD to the mounting device. Ex: /dev/sdb1
 		exit 1
 	fi
-	mount $USB $DIR
+	mount $SD $DIR
 fi
 
 cp obj/kernel.img $DIR/kernel.img
