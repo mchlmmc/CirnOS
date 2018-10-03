@@ -20,24 +20,24 @@
 set -e
 
 
-GCC_OPTS=-nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mfpu=vfp -mhard-float
-GCC_LIBS=-lluajit -lc -lgcc -lnosys -lm
+GCC_OPTS="-nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mfpu=vfp -mhard-float"
+GCC_LIBS="-lluajit -lc -lgcc -lnosys -lm"
 
 # Switch custom parameters
 if [[ -z $CC ]]; then
-  CC=arm-none-eabi-gcc
+  CC="arm-none-eabi-gcc"
 fi
 if [[ -z $OBJCOPY ]]; then
-  OBJCOPY=arm-none-eabi-objcopy
+  OBJCOPY="arm-none-eabi-objcopy"
 fi
 if [[ -z $CFLAGS ]]; then
-  CFLAGS=-Wall -g0 -O2 -nostdlib
+  CFLAGS="-Wall -g0 -O2 -nostdlib"
 fi
 if [[ -z $INC ]]; then
-  INC=-I. -Isrc -Iinclude -I/usr/lib/arm-none-eabi/include
+  INC="-I. -Isrc -Iinclude -I/usr/lib/arm-none-eabi/include"
 fi
 if [[ -z $LIBS ]]; then
-  LIBS=-L. -Lsrc -Llib -L/usr/lib/arm-none-eabi/newlib/hard
+  LIBS="-L. -Lsrc -Llib -L/usr/lib/arm-none-eabi/newlib/hard"
 fi
 
 
