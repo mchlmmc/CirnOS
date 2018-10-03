@@ -1,12 +1,12 @@
 ![CirnOS Logo](logo.png)
 # CirnOS
-CirnOS is an operating system for the Raspberry Pi built for the purpose of usability and simplicity. It provides a simple environment for running Lua scripts on Raspberry Pi. It has no kernel or time management -- it is single threaded. You run your code on the device, and that is it.
+CirnOS is an operating system for the Raspberry Pi built for the purpose of usability and simplicity. It provides a simple environment for running Lua scripts on Raspberry Pi. It has no kernel, but can use coroutines for time management. You run your code on the device, and that is it.
 
-CirnOS has only been tested on the Raspberry Pi Zero, but should work on the original Raspberry Pi and the Zero W.
+CirnOS has only been tested on the Raspberry Pi Zero, but should work on the original Raspberry Pi and the Zero W. It is in development for Raspberry Pi 3.
 
 Why use CirnOS when there's Raspbian?
 -----
-Raspbian is significantly more complex than what most Raspberry Pi users need. Often, an rPi is used for one specific embedded task. It does not need a kernel, or different protection levels, or an operating system taking up hundreds of megabytes.
+Raspbian is significantly more complex than what most Raspberry Pi users need. Often, an rPi is used for one specific embedded task. Like Arduino, it does not need a kernel, or different protection levels, or an operating system taking up hundreds of megabytes.
 
 The workflow that Raspbian creates is also rather clunky. Without knowledge of SSH, it requires the user to plug in a keyboard, mouse and screen into their Raspberry Pi to program and configure it, while the project that the rPi is used for might not need any of these peripherals. Furthermore, setting up an application to run automatically is not straightforward given the tremendous number of ways to accomplish the task (CRON, systemd, initd, upstart, etc).
 
