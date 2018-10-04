@@ -35,4 +35,4 @@ Why the name 'CirnOS'?
 -----
 CirnOS was built for use in my virtual pet project. This project was originally going to use 9front as its operating system, but I decided that 9front was too excessive for the tasks I needed my virtual pet to do. When I was using 9front it made sense to name my virtual pet after the mascot of the 9front operating system, the Touhou character Cirno. The name CirnOS is therefore a portmanteau of Cirno and OS.
 
-This may alienate some Touhou fans, but to differentiate CirnOS from the Touhou character, the preferred pronounciation of CirnOS is 'Sirnoce'.
+This may alienate some Touhou fans, but to differentiate CirnOS from the Touhou character, the preferred pronounciation of CirnOS is 'Sir·nose'.
