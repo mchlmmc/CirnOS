@@ -19,7 +19,32 @@
 #include "LUA/luajit.h"
 #include "LUA/lauxlib.h"
 
+#define RPI_PIN_MAX 40
+#define RPI_ZERO 1
+
 uint32_t pwm_range = 256;
+const static int phys_pin_to_gpio_rev2[41] = {-1, -1, -1, 2, -1, 3, -1, 4, 14, -1, 15, 17, 18, 27, -1, 22, 23, -1, 24, 10, -1, 9, 25, 11, 8, -1, 7, -1, -1, 5, -1, 6, 12, 13, -1, 19, 16, 26, 20, -1, 21};
+
+static int rpi_pin_to_gpio(uint8_t phys_pin, uint8_t *gpio) {
+    int* phys_to_gpio = &phys_pin_to_gpio_rev2[0];
+    
+    if (phys_pin > RPI_PIN_MAX) {
+        if (phys_pin == 47) {
+            *gpio = phys_pin;
+            return 0;
+        }
+        return -1;
+    }
+    
+    int pin = *(phys_to_gpio+phys_pin);
+    if(pin == -1) {
+        return -1;
+    } else {
+        *gpio = pin;
+    }
+    
+    return 0;
+}
 
 static int l_delay (lua_State *L)
 {
@@ -50,7 +75,14 @@ static int l_fsel (lua_State *L)
     luaL_error(L, "BCM2835 Error: Invalid mode value.");
   }
 
-  bcm2835_gpio_fsel(pin, mode);
+  uint8_t gpio_pin;
+  
+  if (rpi_pin_to_gpio(pin, &gpio_pin) != 0) {
+      luaL_error(L, "PIN Error: Invalid pin value.");
+      
+  }
+    
+  bcm2835_gpio_fsel(gpio_pin, mode);
   
   return 0;
 }
@@ -78,10 +110,19 @@ static int l_write (lua_State *L)
     break;
   }
 
+    
+  uint8_t gpio_pin;
+  
+  if (rpi_pin_to_gpio(pin, &gpio_pin) != 0) {
+      luaL_error(L, "PIN Error: Invalid pin value.");    
+  }
+    
   // LED on Pi Zero
-  if(pin == 47) k = !k;
-
-  bcm2835_gpio_write(pin, k);
+  if (RPI_ZERO && gpio_pin == 47) {
+      k = !k;
+  }
+    
+  bcm2835_gpio_write(gpio_pin, k);
   
   return 0;
 }
@@ -94,9 +135,13 @@ static int l_lev (lua_State *L)
   }
   
   uint8_t pin = (uint8_t)p;
+  uint8_t gpio_pin;
+  if (rpi_pin_to_gpio(pin, &gpio_pin) != 0) {
+      luaL_error(L, "PIN Error: Invalid pin value.");    
+  }
   
   lua_checkstack(L, 1);
-  lua_pushboolean(L, bcm2835_gpio_lev(pin));
+  lua_pushboolean(L, bcm2835_gpio_lev(gpio_pin));
   
   return 1;
 }
