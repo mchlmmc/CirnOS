@@ -315,10 +315,11 @@ static int l_spi_transfer (lua_State *L)
  *
  * Registers various constants and 
  * functions to allow Lua user code to
- * access the rPi's peripherals.t
+ * access the rPi's peripherals.
  */
 void luabcm_register(lua_State *L)
 {
+  // Registered Functions
   lua_pushcfunction(L, l_delay);
   lua_setglobal(L, "delay");
   lua_pushcfunction(L, l_fsel);
