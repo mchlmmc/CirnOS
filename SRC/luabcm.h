@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include "LUA/luajit.h"
+#include "luajit.h"
 
 #ifndef LUABCM_H
 #define LUABCM_H

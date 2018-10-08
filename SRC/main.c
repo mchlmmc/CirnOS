@@ -19,12 +19,13 @@
 #include "bcm2835.h"
 #include "hdmi.h"
 #include "ff.h"
+
 #include "luabcm.h"
 
-#include "LUA/lua.h"
-#include "LUA/lualib.h"
-#include "LUA/lauxlib.h"
-#include "LUA/luajit.h"
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+#include "luajit.h"
 
 
 #ifndef DEFAULT_MAIN

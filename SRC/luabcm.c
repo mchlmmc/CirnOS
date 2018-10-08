@@ -14,10 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <stdio.h>
+
 #include "bcm2835.h"
-#include "stdio.h"
-#include "LUA/luajit.h"
-#include "LUA/lauxlib.h"
+
+#include "luajit.h"
+#include "lauxlib.h"
 
 #define RPI_PIN_MAX 40
 #define RPI_ZERO 1

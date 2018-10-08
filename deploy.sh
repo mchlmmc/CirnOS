@@ -13,9 +13,24 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
-#!/bin/sh
 
-./build.sh
-sudo mount /dev/sdb1 /mnt
-sudo cp OBJ/kernel.img /mnt/kernel.img
-sudo umount /mnt
+#!/usr/bin/env bash
+
+# Stop on errors
+set -e
+
+if [[ -z $DIR ]]; then
+	echo Please set DIR to the mount destination. Ex: /cirnosmt/
+	exit 1
+fi
+
+if [[ -z $SM ]]; then
+	if [[ -z $SD ]]; then
+		echo Please set SD to the mounting device. Ex: /dev/sdb1
+		exit 1
+	fi
+	mount $SD $DIR
+fi
+
+cp obj/kernel.img $DIR/kernel.img
+umount $DIR

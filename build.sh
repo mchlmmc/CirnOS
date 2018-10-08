@@ -14,18 +14,47 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Stop on errors
 set -e
 
-GCC_OPTS=" -Wall -O2 -nostartfiles -nostdlib -ffreestanding -mcpu=arm1176jzf-s -mfpu=vfp -mhard-float -ISRC -I/usr/lib/arm-none-eabi/include"
 
-COMPILE="arm-none-eabi-gcc $GCC_OPTS"
+GCC_OPTS="-nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mfpu=vfp -mhard-float"
+GCC_LIBS="-lluajit -lc -lgcc -lnosys -lm"
 
-mkdir -p OBJ
+# Switch custom parameters
+if [[ -z $CC ]]; then
+  CC="arm-none-eabi-gcc"
+fi
+if [[ -z $OBJCOPY ]]; then
+  OBJCOPY="arm-none-eabi-objcopy"
+fi
+if [[ -z $CFLAGS ]]; then
+  CFLAGS="-Wall -g0 -O2 -nostdlib"
+fi
+if [[ -z $INC ]]; then
+  INC="-I. -Isrc -Iinclude -I/usr/lib/arm-none-eabi/include"
+fi
+if [[ -z $LIBS ]]; then
+  LIBS="-L. -Lsrc -Llib -L/usr/lib/arm-none-eabi/newlib/hard"
+fi
 
-$COMPILE -o OBJ/CirnOS.elf -T SRC/loader SRC/vectors.s SRC/*.c -L. -lluajit -L/usr/lib/arm-none-eabi/newlib/hard -lc -lgcc -lnosys -lm
 
-# Extract binary image from ELF executable
-arm-none-eabi-objcopy OBJ/CirnOS.elf -O binary OBJ/kernel.img
+mkdir -p obj
+mkdir -p bin/test
+
+
+# Compile OS
+$CC $CFLAGS $GCC_OPTS $INC $LIBS -c src/*.c src/*.s
+mv -u *.o obj
+
+# Link OS
+$CC $CFLAGS $GCC_OPTS $INC $LIBS -o CirnOS.elf -T src/linker.ld obj/*.o $GCC_LIBS
+mv -u *.elf obj
+mv -u *.img obj
+
+# Extract binary image from ELF executable, load  into common dir
+$OBJCOPY obj/CirnOS.elf -O binary bin/kernel.img
+cp root/* bin/
+cp test/* bin/test
