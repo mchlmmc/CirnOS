@@ -22,8 +22,8 @@
 void hdmi_init();
 void hdmi_write_char(char c);
 
-#define SCREEN_WIDTH            1600
-#define SCREEN_HEIGHT           900
+#define SCREEN_WIDTH            1280
+#define SCREEN_HEIGHT           720
 
 #define CHAR_W                  8
 #define CHAR_H                  12

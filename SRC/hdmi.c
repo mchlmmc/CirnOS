@@ -252,23 +252,20 @@ void hdmi_scroll_screen(uint8_t move_cursor) {
  * and scrolls automatically. 
  */
 void hdmi_write_char(char c){
-  static uint8_t last_newline = 0;
-  if(last_newline) {
-    hdmi_scroll_screen(1);
-    last_newline = 0;
-  }
-  if (c == '\n') { 
+  static uint8_t scroll_next = 0;
+  if(scroll_next) {
+    scroll_next = 0;    
     cursor_column = 0;
     cursor_row++;    
-  } else {
-    hdmi_draw_char(c, cursor_column, cursor_row);
-    if(++cursor_column >= CONSOLE_WIDTH){
-      // If it exceeds CONSOLE_WIDTH then increase the cursor's row and go down.      
-      cursor_column = 0;
-      cursor_row++;
-    }      
+    if(cursor_row == CONSOLE_HEIGHT) {
+      hdmi_scroll_screen(1);
+    }
   }
-  if(cursor_row > CONSOLE_HEIGHT) {
-    last_newline = 1;
+  if(c != '\n') {
+    hdmi_draw_char(c, cursor_column, cursor_row);
+    cursor_column++;
+  }
+  if(cursor_column == CONSOLE_WIDTH || c == '\n') {
+    scroll_next = 1;
   }
 }
