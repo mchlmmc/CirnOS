@@ -9,8 +9,8 @@ hdmi_mode=4
 # Disable rainbow splash
 disable_splash=1
 
-# Use cirnos file for boot
-kernel=cirnos
+# Use cirnos.img file for boot
+kernel=cirnos.img
 
 # Allow screen to be unplugged and plugged in while CirnOS is live
 hdmi_force_hotplug=1

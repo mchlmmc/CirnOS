@@ -17,7 +17,7 @@ Using CirnOS
 - Format your rPi's SD card as FAT32, using a tool such as SD Association's SD Memory Card Formatter <https://www.sdcard.org/downloads/formatter_4/>.
 - Make sure the root directory in the SD Card is empty, and that the SD Card has only one volume.
 - Copy all files from ROOTDIR into the root of the SD Card.
-- Copy cirnos from OBJ into the root of the SD Card.
+- Copy cirnos.img from OBJ into the root of the SD Card.
 - Edit main.lua to control the rPi.
 
 # Building
@@ -25,11 +25,11 @@ Arch Linux
 -----
 
 Building CirnOS on Arch Linux requires an installation of the GNU Arm Embedded Toolchain, which can be found at <https://www.archlinux.org/packages/community/x86_64/arm-none-eabi-gcc/>.
-Once installed, run build.sh in the project directory to create the cirnos file in the object folder.
+Once installed, run build.sh in the project directory to create the cirnos.img file in the object folder.
 
 Fedora
 -----
-Building CirnOS on Fedora requires a full installation of the GNU Arm Embedded Toolchain, which can be set up by first installing the relevant binutils package found at <https://rpmfind.net/linux/rpm2html/search.php?query=arm-none-eabi-gcc> and then installing Newlib, which can be found at <https://apps.fedoraproject.org/packages/arm-none-eabi-newlib>. Following installation, run build.sh in the project directory to create the cirnos file in the object folder.
+Building CirnOS on Fedora requires a full installation of the GNU Arm Embedded Toolchain, which can be set up by first installing the relevant binutils package found at <https://rpmfind.net/linux/rpm2html/search.php?query=arm-none-eabi-gcc> and then installing Newlib, which can be found at <https://apps.fedoraproject.org/packages/arm-none-eabi-newlib>. Following installation, run build.sh in the project directory to create the cirnos.img file in the object folder.
 
 Why the name 'CirnOS'?
 -----

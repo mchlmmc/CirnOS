@@ -17,5 +17,5 @@
 
 ./build.sh
 sudo mount /dev/sdb1 /mnt
-sudo cp OBJ/cirnos /mnt/cirnos
+sudo cp OBJ/cirnos.img /mnt/cirnos.img
 sudo umount /mnt
