@@ -1,4 +1,8 @@
 ![CirnOS Logo](logo.png)
+
+# Notice:
+For a detailed summary of the current state of the CirnOS project, see [this post on my blog.](https://mikestylz.github.io/2019/02/27/state-of-cirnos.html)
+
 # CirnOS
 CirnOS is an operating system for the Raspberry Pi built for the purpose of usability and simplicity. It provides a simple environment for running Lua scripts on Raspberry Pi. It has no kernel, but can use coroutines for time management. You run your code on the device, and that is it.
 
